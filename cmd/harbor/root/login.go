@@ -1,10 +1,22 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 package root
 
 import (
 	"context"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/goharbor/go-client/pkg/harbor"
 	"github.com/goharbor/go-client/pkg/sdk/v2.0/client/user"
@@ -50,6 +62,11 @@ func LoginCommand() *cobra.Command {
 				Username: Username,
 				Password: Password,
 				Name:     Name,
+			}
+
+			// autogenerate name
+			if loginView.Name == "" && loginView.Server != "" && loginView.Username != "" {
+				loginView.Name = fmt.Sprintf("%s@%s", loginView.Username, utils.SanitizeServerAddress(loginView.Server))
 			}
 
 			var err error

@@ -1,9 +1,12 @@
-
 ![harbor-3](https://github.com/goharbor/harbor-cli/assets/70086051/835ab686-1cce-4ac7-bc57-05a35c2b73cc)
 
 **Welcome to the Harbor CLI project! This powerful command-line tool facilitates seamless interaction with the Harbor container registry. It simplifies various tasks such as creating, updating, and managing projects, registries, and other resources in Harbor.**
 
 [![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/harbor-cli)](https://artifacthub.io/packages/search?repo=harbor-cli)
+<<<<<<< HEAD
+=======
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fgoharbor%2Fharbor-cli.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fgoharbor%2Fharbor-cli?ref=badge_shield)
+>>>>>>> origin/main
 
 # Project Scope 🧪
 
@@ -90,7 +93,11 @@ Available Commands:
   version     Version of Harbor CLI
 
 Flags:
+<<<<<<< HEAD
   -c, --config string          config file (default is $HOME/.config/harbor-cli/config.yaml)
+=======
+      --config string          config file (default is $HOME/.harbor/config.yaml) (default "/Users/vadim/.harbor/config.yaml")
+>>>>>>> origin/main
   -h, --help                   help for harbor
   -o, --output-format string   Output format. One of: json|yaml
   -v, --verbose                verbose output
@@ -190,7 +197,7 @@ dagger call build-dev --platform darwin/arm64 export --path=./harbor-cli
 If golang is installed in your system, you can also build the project using the following commands:
 
 ```bash
-git clone https://github.com/goharbor/harbor-cli.git
+git clone https://github.com/goharbor/harbor-cli.git && cd harbor-cli
 go build -o harbor-cli cmd/harbor/main.go
 ```
 
@@ -214,6 +221,9 @@ Harbor <2.0.0 is not supported.
 # License
 
 This project is licensed under the Apache 2.0 License. See the [LICENSE](https://github.com/goharbor/harbor-cli/blob/main/LICENSE) file for details.
+
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fgoharbor%2Fharbor-cli.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fgoharbor%2Fharbor-cli?ref=badge_large)
 
 # Acknowledgements
 
