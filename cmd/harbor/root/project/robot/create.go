@@ -98,7 +98,7 @@ Examples:
 
 			if configFile != "" {
 				fmt.Println("Loading configuration from: ", configFile)
-				loadedOpts, loadErr := config.LoadRobotConfigFromFile(configFile)
+				loadedOpts, loadErr := config.LoadRobotConfigFromFile(configFile, "project")
 				if loadErr != nil {
 					return fmt.Errorf("failed to load robot config from file: %v", loadErr)
 				}
@@ -145,7 +145,7 @@ Examples:
 						}
 						permissions = choices
 					} else {
-						permissions = prompt.GetRobotPermissionsFromUser()
+						permissions = prompt.GetRobotPermissionsFromUser("project")
 						if len(permissions) == 0 {
 							msg := fmt.Errorf("no permissions selected, robot account needs at least one permission")
 							return fmt.Errorf("failed to create robot: %v", utils.ParseHarborErrorMsg(msg))
@@ -163,11 +163,13 @@ Examples:
 					accesses = append(accesses, access)
 				}
 				// convert []models.permission to []*model.Access
-				perm := &create.RobotPermission{
-					Namespace: opts.ProjectName,
-					Access:    accesses,
+				opts.Permissions = []*create.RobotPermission{
+					{
+						Namespace: opts.ProjectName,
+						Access:    accesses,
+						Kind:      "project",
+					},
 				}
-				opts.Permissions = []*create.RobotPermission{perm}
 			}
 			response, err := api.CreateRobot(opts, "project")
 			if err != nil {
