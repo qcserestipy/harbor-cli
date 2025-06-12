@@ -113,6 +113,67 @@ func CreateRobot(opts create.CreateView, kind string) (*robot.CreateRobotCreated
 	return response, nil
 }
 
+//            "action": "update",
+//             "resource": "user-group"
+//           }
+//         ],
+//         "kind": "system",
+//         "namespace": "/"
+//       }
+//     ],
+//     "update_time": "2025-06-11T19:05:09.507Z"
+//   },
+//   {
+// --
+//             "action": "update",
+//             "resource": "scan-all"
+//           }
+//         ],
+//         "kind": "system",
+//         "namespace": "/"
+//       }
+//     ],
+
+func CreateSystemRobot(opts create.CreateView, kind string) (*robot.CreateRobotCreated, error) {
+	ctx, client, err := utils.ContextWithClient()
+	if err != nil {
+		return nil, err
+	}
+
+	// Create a slice to store converted permissions
+	permissions := opts.Permissions
+	convertedPerms := make([]*models.RobotPermission, 0, len(permissions))
+
+	// Loop through original permissions and convert them
+	for _, perm := range permissions {
+		convertedPerm := &models.RobotPermission{
+			Access:    perm.Access,
+			Kind:      kind,
+			Namespace: "/", // System robots use root namespace
+		}
+		convertedPerms = append(convertedPerms, convertedPerm)
+	}
+	response, err := client.Robot.CreateRobot(
+		ctx,
+		&robot.CreateRobotParams{
+			Robot: &models.RobotCreate{
+				Description: opts.Description,
+				Disable:     false,
+				Duration:    opts.Duration,
+				Level:       kind,
+				Name:        opts.Name,
+				Permissions: convertedPerms,
+			},
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	log.Info("robot created successfully.")
+	return response, nil
+}
+
 // update robot with robotID
 func UpdateRobot(opts *update.UpdateView) error {
 	ctx, client, err := utils.ContextWithClient()
