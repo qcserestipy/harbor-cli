@@ -102,7 +102,7 @@ func ViewRobot(robot *models.Robot) {
 		}
 	}
 
-	availablePerms, err := config.GetAllAvailablePermissions()
+	availablePerms, err := config.GetAllAvailablePermissions(robot.Level)
 	if err != nil {
 		fmt.Printf("Error fetching available permissions: %v\n", err)
 		os.Exit(1)
