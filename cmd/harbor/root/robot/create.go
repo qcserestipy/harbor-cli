@@ -156,8 +156,14 @@ Examples:
 
 				if opts.ProjectName == "" {
 					// Start a loop to collect multiple projects and their permissions
-					continueLoop := true
-					for continueLoop {
+					for {
+						moreProjects, err := promptMoreProjects()
+						if err != nil {
+							return fmt.Errorf("error asking for more projects: %v", err)
+						}
+						if !moreProjects {
+							break
+						}
 						projectName, err := prompt.GetProjectNameFromUser()
 						if err != nil {
 							return fmt.Errorf("%v", utils.ParseHarborErrorMsg(err))
@@ -166,11 +172,6 @@ Examples:
 							return fmt.Errorf("project name cannot be empty")
 						}
 						projectPermissionsMap[projectName] = prompt.GetRobotPermissionsFromUser("project")
-						moreProjects, err := promptMoreProjects()
-						if err != nil {
-							return fmt.Errorf("error asking for more projects: %v", err)
-						}
-						continueLoop = moreProjects
 					}
 				} else {
 					projectPermissions := prompt.GetRobotPermissionsFromUser("project")
@@ -274,8 +275,8 @@ func promptMoreProjects() (bool, error) {
 				Title("Project Selection").
 				Description("You can add permissions for multiple projects to this robot account."),
 			huh.NewSelect[bool]().
-				Title("Do you want to select more projects?").
-				Description("Select 'Yes' to add another project, 'No' to continue with current selection.").
+				Title("Do you want to select (more) projects?").
+				Description("Select 'Yes' to add (another) project, 'No' to continue with current selection.").
 				Options(
 					huh.NewOption("No", false),
 					huh.NewOption("Yes", true),
