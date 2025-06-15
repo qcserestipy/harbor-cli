@@ -71,15 +71,8 @@ Examples:
 				if err != nil {
 					log.Fatalf("failed to parse robot ID: %v", err)
 				}
-			} else if ProjectName != "" {
-				project, err := api.GetProject(ProjectName, false)
-				if err != nil {
-					log.Fatalf("failed to get project by name %s: %v", ProjectName, err)
-				}
-				robotID = prompt.GetRobotIDFromUser(int64(project.Payload.ProjectID))
 			} else {
-				projectID := prompt.GetProjectIDFromUser()
-				robotID = prompt.GetRobotIDFromUser(projectID)
+				robotID = prompt.GetRobotIDFromUser(-1)
 			}
 
 			robot, err = api.GetRobot(robotID)

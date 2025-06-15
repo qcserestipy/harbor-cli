@@ -383,7 +383,7 @@ func NewRobotPermissionsGrid(kind string) *tablegrid.TableGrid {
 	//
 	// -----------------------------------------------------------------------
 	//
-	// // Project Robot Permissions Grid
+	// Project Robot Permissions Grid
 	// The disabled map corresponds to the permissions for each resource and action in the harbor UI.
 	// This shows which actions are available (✓) or unavailable (✗) for each resource:
 	//
