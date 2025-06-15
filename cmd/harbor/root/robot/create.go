@@ -201,8 +201,8 @@ Examples:
 					Kind:      "system",
 				})
 				opts.Permissions = mergedPermissions
-
 			}
+
 			response, err := api.CreateRobot(opts, "system")
 			if err != nil {
 				return fmt.Errorf("failed to create robot: %v", utils.ParseHarborErrorMsg(err))
