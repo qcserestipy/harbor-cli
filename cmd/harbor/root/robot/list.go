@@ -14,12 +14,7 @@
 package robot
 
 import (
-	"fmt"
-	"strconv"
-
 	"github.com/goharbor/harbor-cli/pkg/api"
-	"github.com/goharbor/harbor-cli/pkg/constants"
-	"github.com/goharbor/harbor-cli/pkg/prompt"
 	"github.com/goharbor/harbor-cli/pkg/utils"
 	"github.com/goharbor/harbor-cli/pkg/views/robot/list"
 	log "github.com/sirupsen/logrus"
@@ -31,7 +26,6 @@ import (
 func ListRobotCommand() *cobra.Command {
 	var opts api.ListFlags
 
-	projectQString := constants.ProjectQString
 	cmd := &cobra.Command{
 		Use:   "list [projectName]",
 		Short: "list robot",
@@ -68,27 +62,11 @@ Examples:
 
   # Interactive listing (will prompt for project selection)
   harbor-cli project robot list`,
-		Args: cobra.MaximumNArgs(1),
+		Args: cobra.MaximumNArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
-			if len(args) > 0 {
-				project, err := api.GetProject(args[0], false)
-				if err != nil {
-					log.Errorf("Invalid Project Name: %v", err)
-				}
-				opts.ProjectID = int64(project.Payload.ProjectID)
-				opts.Q = projectQString + strconv.FormatInt(opts.ProjectID, 10)
-			} else if opts.Q != "" {
-				opts.Q = projectQString + opts.Q
-			} else if opts.ProjectID > 0 {
-				opts.Q = projectQString + strconv.FormatInt(opts.ProjectID, 10)
-			} else {
-				projectID := prompt.GetProjectIDFromUser()
-				opts.Q = projectQString + strconv.FormatInt(projectID, 10)
-			}
-			fmt.Println(opts.Q)
 			robots, err := api.ListRobot(opts)
 			if err != nil {
-				log.Errorf("failed to get robots list: %v", err)
+				log.Errorf("failed to get robots list: %v", utils.ParseHarborErrorMsg(err))
 			}
 
 			formatFlag := viper.GetString("output-format")
