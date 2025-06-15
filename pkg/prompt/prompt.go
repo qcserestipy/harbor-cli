@@ -258,11 +258,11 @@ func GetActiveContextFromUser() (string, error) {
 	return res, nil
 }
 
-func GetRobotPermissionsFromUser() []models.Permission {
+func GetRobotPermissionsFromUser(kind string) []models.Permission {
 	permissions := make(chan []models.Permission)
 	go func() {
 		response, _ := api.GetPermissions()
-		robotView.ListPermissions(response.Payload, permissions)
+		robotView.ListPermissions(response.Payload, kind, permissions)
 	}()
 	return <-permissions
 }
@@ -270,7 +270,11 @@ func GetRobotPermissionsFromUser() []models.Permission {
 func GetRobotIDFromUser(projectID int64) int64 {
 	robotID := make(chan int64)
 	var opts api.ListFlags
-	opts.Q = constants.ProjectQString + strconv.FormatInt(projectID, 10)
+
+	// -1 is for system robots, they do not need a project query string
+	if projectID != -1 {
+		opts.Q = constants.ProjectQString + strconv.FormatInt(projectID, 10)
+	}
 
 	go func() {
 		response, _ := api.ListRobot(opts)

@@ -47,7 +47,7 @@ type RobotSecret struct {
 	Secret       string `json:"secret"`
 }
 
-func LoadRobotConfigFromYAMLorJSON(filename string, fileType string) (*create.CreateView, error) {
+func LoadRobotConfigFromYAMLorJSON(filename string, fileType string, kind string) (*create.CreateView, error) {
 	data, err := os.ReadFile(filename)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read YAML file: %v", err)
@@ -72,7 +72,7 @@ func LoadRobotConfigFromYAMLorJSON(filename string, fileType string) (*create.Cr
 		ProjectName: config.Project,
 	}
 
-	permissions, err := ProcessPermissions(config.Permissions)
+	permissions, err := ProcessPermissions(config.Permissions, kind)
 	if err != nil {
 		return nil, err
 	}
@@ -95,10 +95,10 @@ func LoadRobotConfigFromYAMLorJSON(filename string, fileType string) (*create.Cr
 	return opts, nil
 }
 
-func ProcessPermissions(specs []PermissionSpec) ([]models.Permission, error) {
+func ProcessPermissions(specs []PermissionSpec, kind string) ([]models.Permission, error) {
 	var result []models.Permission
 
-	availablePerms, err := GetAllAvailablePermissions()
+	availablePerms, err := GetAllAvailablePermissions(kind)
 	if err != nil {
 		return nil, err
 	}
@@ -151,10 +151,10 @@ func ProcessPermissions(specs []PermissionSpec) ([]models.Permission, error) {
 	return result, nil
 }
 
-func LoadRobotConfigFromFile(filename string) (*create.CreateView, error) {
+func LoadRobotConfigFromFile(filename string, kind string) (*create.CreateView, error) {
 	var opts *create.CreateView
 	var err error
-	opts, err = LoadRobotConfigFromYAMLorJSON(filename, filepath.Ext(filename)[1:])
+	opts, err = LoadRobotConfigFromYAMLorJSON(filename, filepath.Ext(filename)[1:], kind)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to load configuration: %v", err)
@@ -191,14 +191,22 @@ func LoadRobotConfigFromFile(filename string) (*create.CreateView, error) {
 	return opts, nil
 }
 
-func GetAllAvailablePermissions() (map[string][]string, error) {
+func GetAllAvailablePermissions(kind string) (map[string][]string, error) {
 	permsResp, err := api.GetPermissions()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get permissions: %v", err)
 	}
 
 	result := make(map[string][]string)
-	for _, perm := range permsResp.Payload.Project {
+	var permissions []*models.Permission
+	if kind == "system" {
+		permissions = permsResp.Payload.System
+	} else if kind == "project" {
+		permissions = permsResp.Payload.Project
+	} else {
+		return nil, fmt.Errorf("invalid kind specified: %s, expected 'system' or 'project'", kind)
+	}
+	for _, perm := range permissions {
 		resource := perm.Resource
 		if _, exists := result[resource]; !exists {
 			result[resource] = []string{}

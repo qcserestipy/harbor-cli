@@ -14,6 +14,8 @@
 package api
 
 import (
+	"fmt"
+
 	"github.com/goharbor/go-client/pkg/sdk/v2.0/client/permissions"
 	"github.com/goharbor/go-client/pkg/sdk/v2.0/client/robot"
 	"github.com/goharbor/go-client/pkg/sdk/v2.0/models"
@@ -87,8 +89,8 @@ func CreateRobot(opts create.CreateView, kind string) (*robot.CreateRobotCreated
 	for _, perm := range permissions {
 		convertedPerm := &models.RobotPermission{
 			Access:    perm.Access,
-			Kind:      kind,
-			Namespace: opts.ProjectName,
+			Kind:      perm.Kind,
+			Namespace: perm.Namespace,
 		}
 		convertedPerms = append(convertedPerms, convertedPerm)
 	}
@@ -106,7 +108,7 @@ func CreateRobot(opts create.CreateView, kind string) (*robot.CreateRobotCreated
 		},
 	)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create robot: %v", utils.ParseHarborErrorMsg(err))
 	}
 
 	log.Info("robot created successfully.")

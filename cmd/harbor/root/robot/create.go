@@ -19,6 +19,7 @@ import (
 	"os"
 
 	"github.com/atotto/clipboard"
+	"github.com/charmbracelet/huh"
 	"github.com/goharbor/go-client/pkg/sdk/v2.0/models"
 	"github.com/goharbor/harbor-cli/pkg/api"
 	"github.com/goharbor/harbor-cli/pkg/config"
@@ -95,37 +96,28 @@ Examples:
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
 			var permissions []models.Permission
+			// var projectPermissions []models.Permission
+			var projectPermissionsMap map[string][]models.Permission = make(map[string][]models.Permission)
 
-			if configFile != "" {
-				fmt.Println("Loading configuration from: ", configFile)
-				loadedOpts, loadErr := config.LoadRobotConfigFromFile(configFile, "project")
-				if loadErr != nil {
-					return fmt.Errorf("failed to load robot config from file: %v", loadErr)
-				}
-				logrus.Info("Successfully loaded robot configuration")
-				opts = *loadedOpts
-				permissions = make([]models.Permission, len(opts.Permissions[0].Access))
-				for i, access := range opts.Permissions[0].Access {
-					permissions[i] = models.Permission{
-						Resource: access.Resource,
-						Action:   access.Action,
-					}
-				}
-			}
-
-			if opts.ProjectName == "" {
-				opts.ProjectName, err = prompt.GetProjectNameFromUser()
-				if err != nil {
-					return fmt.Errorf("%v", utils.ParseHarborErrorMsg(err))
-				}
-				if opts.ProjectName == "" {
-					return fmt.Errorf("project name cannot be empty")
-				}
-			}
+			// if configFile != "" {
+			// 	fmt.Println("Loading configuration from: ", configFile)
+			// 	loadedOpts, loadErr := config.LoadRobotConfigFromFile(configFile, "system")
+			// 	if loadErr != nil {
+			// 		return fmt.Errorf("failed to load robot config from file: %v", loadErr)
+			// 	}
+			// 	logrus.Info("Successfully loaded robot configuration")
+			// 	opts = *loadedOpts
+			// 	permissions = make([]models.Permission, len(opts.Permissions[0].Access))
+			// 	for i, access := range opts.Permissions[0].Access {
+			// 		permissions[i] = models.Permission{
+			// 			Resource: access.Resource,
+			// 			Action:   access.Action,
+			// 		}
+			// 	}
+			// }
 
 			if len(args) == 0 {
 				if (opts.Name == "" || opts.Duration == 0) && configFile == "" {
-					fmt.Println("Opening interactive form for robot creation")
 					create.CreateRobotView(&opts)
 				}
 
@@ -137,7 +129,7 @@ Examples:
 				if len(permissions) == 0 {
 					if all {
 						perms, _ := api.GetPermissions()
-						permission := perms.Payload.Project
+						permission := perms.Payload.System
 
 						choices := []models.Permission{}
 						for _, perm := range permission {
@@ -145,7 +137,7 @@ Examples:
 						}
 						permissions = choices
 					} else {
-						permissions = prompt.GetRobotPermissionsFromUser("project")
+						permissions = prompt.GetRobotPermissionsFromUser("system")
 						if len(permissions) == 0 {
 							msg := fmt.Errorf("no permissions selected, robot account needs at least one permission")
 							return fmt.Errorf("failed to create robot: %v", utils.ParseHarborErrorMsg(msg))
@@ -153,25 +145,65 @@ Examples:
 					}
 				}
 
-				// []Permission to []*Access
-				var accesses []*models.Access
+				var accessesSystem []*models.Access
 				for _, perm := range permissions {
 					access := &models.Access{
-						Action:   perm.Action,
 						Resource: perm.Resource,
+						Action:   perm.Action,
 					}
-					accesses = append(accesses, access)
+					accessesSystem = append(accessesSystem, access)
 				}
-				// convert []models.permission to []*model.Access
-				opts.Permissions = []*create.RobotPermission{
-					{
-						Namespace: opts.ProjectName,
-						Access:    accesses,
+
+				if opts.ProjectName == "" {
+					// Start a loop to collect multiple projects and their permissions
+					for {
+						moreProjects, err := promptMoreProjects()
+						if err != nil {
+							return fmt.Errorf("error asking for more projects: %v", err)
+						}
+						if !moreProjects {
+							break
+						}
+						projectName, err := prompt.GetProjectNameFromUser()
+						if err != nil {
+							return fmt.Errorf("%v", utils.ParseHarborErrorMsg(err))
+						}
+						if projectName == "" {
+							return fmt.Errorf("project name cannot be empty")
+						}
+						projectPermissionsMap[projectName] = prompt.GetRobotPermissionsFromUser("project")
+					}
+				} else {
+					projectPermissions := prompt.GetRobotPermissionsFromUser("project")
+					projectPermissionsMap[opts.ProjectName] = projectPermissions
+				}
+
+				var mergedPermissions []*create.RobotPermission
+				for projectName, projectPermissions := range projectPermissionsMap {
+					var accessesProject []*models.Access
+					for _, perm := range projectPermissions {
+						access := &models.Access{
+							Resource: perm.Resource,
+							Action:   perm.Action,
+						}
+						accessesProject = append(accessesProject, access)
+					}
+					mergedPermissions = append(mergedPermissions, &create.RobotPermission{
+						Namespace: projectName,
+						Access:    accessesProject,
 						Kind:      "project",
-					},
+					})
 				}
+
+				mergedPermissions = append(mergedPermissions, &create.RobotPermission{
+					Namespace: "/",
+					Access:    accessesSystem,
+					Kind:      "system",
+				})
+				opts.Permissions = mergedPermissions
 			}
-			response, err := api.CreateRobot(opts, "project")
+
+			response, err := api.CreateRobot(opts, "system")
 			if err != nil {
 				return fmt.Errorf("failed to create robot: %v", utils.ParseHarborErrorMsg(err))
 			}
@@ -207,7 +239,6 @@ Examples:
 	flags := cmd.Flags()
 	flags.BoolVarP(&all, "all-permission", "a", false, "Select all permissions for the robot account")
 	flags.BoolVarP(&exportToFile, "export-to-file", "e", false, "Choose to export robot account to file")
-
 	flags.StringVarP(&opts.ProjectName, "project", "", "", "set project name")
 	flags.StringVarP(&opts.Name, "name", "", "", "name of the robot account")
 	flags.StringVarP(&opts.Description, "description", "", "", "description of the robot account")
@@ -234,4 +265,25 @@ func exportSecretToFile(name, secret, creationTime string, expiresAt int64) {
 			fmt.Printf("Secret saved to %s\n", filename)
 		}
 	}
+}
+
+func promptMoreProjects() (bool, error) {
+	var addMore bool = false
+	err := huh.NewForm(
+		huh.NewGroup(
+			huh.NewNote().
+				Title("Project Selection").
+				Description("You can add permissions for multiple projects to this robot account."),
+			huh.NewSelect[bool]().
+				Title("Do you want to select (more) projects?").
+				Description("Select 'Yes' to add (another) project, 'No' to continue with current selection.").
+				Options(
+					huh.NewOption("No", false),
+					huh.NewOption("Yes", true),
+				).
+				Value(&addMore),
+		),
+	).WithTheme(huh.ThemeCharm()).WithWidth(60).WithHeight(10).Run()
+
+	return addMore, err
 }
