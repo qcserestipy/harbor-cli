@@ -27,11 +27,10 @@ import (
 
 // to-do improve DeleteRobotCommand and multi select & delete
 func DeleteRobotCommand() *cobra.Command {
-	var ProjectName string
 	cmd := &cobra.Command{
 		Use:   "delete [robotID]",
 		Short: "delete robot by id",
-		Long: `Delete a robot account from a Harbor project.
+		Long: `Delete a robot account from Harbor.
 
 This command permanently removes a robot account from Harbor. Once deleted,
 the robot's credentials will no longer be valid, and any automated processes
@@ -39,23 +38,20 @@ using those credentials will fail.
 
 The command supports multiple ways to identify the robot account to delete:
 - By providing the robot ID directly as an argument
-- By specifying a project with the --project flag and selecting the robot interactively
-- Without any arguments, which will prompt for both project and robot selection
+- Without any arguments, which will prompt for robot selection
 
 Important considerations:
 - Deletion is permanent and cannot be undone
 - All access tokens for the robot will be invalidated immediately
 - Any systems using the robot's credentials will need to be updated
+- For system robots, access across all projects will be revoked
 
 Examples:
   # Delete robot by ID
-  harbor-cli project robot delete 123
+  harbor-cli robot delete 123
 
-  # Delete robot by selecting from a specific project
-  harbor-cli project robot delete --project myproject
-
-  # Interactive deletion (will prompt for project and robot selection)
-  harbor-cli project robot delete`,
+  # Interactive deletion (will prompt for robot selection)
+  harbor-cli robot delete`,
 		Args: cobra.MaximumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			var (
@@ -65,17 +61,10 @@ Examples:
 			if len(args) == 1 {
 				robotID, err = strconv.ParseInt(args[0], 10, 64)
 				if err != nil {
-					log.Fatalf("failed to parse robot ID: %v", utils.ParseHarborErrorMsg(err))
+					log.Fatalf("failed to parse robot ID: %v", err)
 				}
-			} else if ProjectName != "" {
-				project, err := api.GetProject(ProjectName, false)
-				if err != nil {
-					log.Fatalf("failed to get project by name %s: %v", ProjectName, utils.ParseHarborErrorMsg(err))
-				}
-				robotID = prompt.GetRobotIDFromUser(int64(project.Payload.ProjectID))
 			} else {
-				projectID := prompt.GetProjectIDFromUser()
-				robotID = prompt.GetRobotIDFromUser(projectID)
+				robotID = prompt.GetRobotIDFromUser(-1)
 			}
 			err = api.DeleteRobot(robotID)
 			if err != nil {
@@ -87,7 +76,5 @@ Examples:
 		},
 	}
 
-	flags := cmd.Flags()
-	flags.StringVarP(&ProjectName, "project", "", "", "set project name")
 	return cmd
 }

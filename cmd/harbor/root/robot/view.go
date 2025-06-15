@@ -26,9 +26,6 @@ import (
 )
 
 func ViewRobotCommand() *cobra.Command {
-	var (
-		ProjectName string
-	)
 	cmd := &cobra.Command{
 		Use:   "view [robotID]",
 		Short: "get robot by id",
@@ -36,28 +33,28 @@ func ViewRobotCommand() *cobra.Command {
 
 This command displays comprehensive information about a robot account including
 its ID, name, description, creation time, expiration, and the permissions
-it has been granted within its project.
+it has been granted. Supports both system-level and project-level robot accounts.
 
 The command supports multiple ways to identify the robot account:
 - By providing the robot ID directly as an argument
-- By specifying a project with the --project flag and selecting the robot interactively
-- Without any arguments, which will prompt for both project and robot selection
+- Without any arguments, which will prompt for robot selection
 
 The displayed information includes:
 - Basic details (ID, name, description)
 - Temporal information (creation date, expiration date, remaining time)
 - Security details (disabled status)
 - Detailed permissions breakdown by resource and action
+- For system robots: permissions across multiple projects are shown separately
+
+System-level robots can have permissions spanning multiple projects, while
+project-level robots are scoped to a single project.
 
 Examples:
   # View robot by ID
-  harbor-cli project robot view 123
+  harbor-cli robot view 123
 
-  # View robot by selecting from a specific project
-  harbor-cli project robot view --project myproject
-
-  # Interactive selection (will prompt for project and robot)
-  harbor-cli project robot view`,
+  # Interactive selection (will prompt for robot)
+  harbor-cli robot view`,
 		Args: cobra.MaximumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			var (
@@ -86,7 +83,5 @@ Examples:
 		},
 	}
 
-	flags := cmd.Flags()
-	flags.StringVarP(&ProjectName, "project", "", "", "set project name")
 	return cmd
 }

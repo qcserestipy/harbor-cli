@@ -29,39 +29,37 @@ func ListRobotCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list [projectName]",
 		Short: "list robot",
-		Long: `List robot accounts in a Harbor project.
+		Long: `List robot accounts in Harbor.
 
-This command displays a list of robot accounts, either from a specific project
-or by prompting you to select a project interactively. The list includes basic
+This command displays a list of system-level robot accounts. The list includes basic
 information about each robot account, such as ID, name, creation time, and
 expiration status.
 
-The command supports multiple ways to specify the project:
-- By providing a project name as an argument
-- By using the --project-id flag
-- By using the -q/--query flag with a project filter
-- Without any arguments, which will prompt for project selection
+System-level robots have permissions that can span across multiple projects, making
+them suitable for CI/CD pipelines and automation tasks that require access to 
+multiple projects in Harbor.
 
 You can control the output using pagination flags and format options:
 - Use --page and --page-size to navigate through results
-- Use --sort to order the results
+- Use --sort to order the results by name, creation time, etc.
+- Use -q/--query to filter robots by specific criteria
 - Set output-format in your configuration for JSON, YAML, or other formats
 
 Examples:
-  # List robots in a specific project by name
-  harbor-cli project robot list myproject
+  # List all system robots
+  harbor-cli robot list
 
-  # List robots in a project by ID
-  harbor-cli project robot list --project-id 123
+  # List system robots with pagination
+  harbor-cli robot list --page 2 --page-size 20
 
-  # List robots with pagination
-  harbor-cli project robot list --page 2 --page-size 20
+  # List system robots with custom sorting
+  harbor-cli robot list --sort name
 
-  # List robots with custom sorting
-  harbor-cli project robot list --sort name
+  # Filter system robots by name
+  harbor-cli robot list -q name=ci-robot
 
-  # Interactive listing (will prompt for project selection)
-  harbor-cli project robot list`,
+  # Get robot details in JSON format
+  harbor-cli robot list --output-format json`,
 		Args: cobra.MaximumNArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
 			robots, err := api.ListRobot(opts)
@@ -84,7 +82,6 @@ Examples:
 	flags := cmd.Flags()
 	flags.Int64VarP(&opts.Page, "page", "", 1, "Page number")
 	flags.Int64VarP(&opts.PageSize, "page-size", "", 10, "Size of per page")
-	flags.Int64VarP(&opts.ProjectID, "project-id", "", 0, "Project ID")
 	flags.StringVarP(&opts.Q, "query", "q", "", "Query string to query resources")
 	flags.StringVarP(
 		&opts.Sort,
