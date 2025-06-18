@@ -42,11 +42,15 @@ func CreateRobotCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "create",
 		Short: "create robot",
-		Long: `Create a new robot account within a Harbor project.
+		Long: `Create a new robot account within Harbor.
 
 Robot accounts are non-human users that can be used for automation purposes
 such as CI/CD pipelines, scripts, or other automated processes that need
 to interact with Harbor. They have specific permissions and a defined lifetime.
+
+This command creates system-level robots that can have permissions spanning 
+multiple projects, making them suitable for automation tasks that need access 
+across your Harbor instance.
 
 This command supports both interactive and non-interactive modes:
 - Without flags: opens an interactive form for configuring the robot
@@ -55,8 +59,8 @@ This command supports both interactive and non-interactive modes:
 
 A robot account requires:
 - A unique name
-- A project where it will be created
-- A set of permissions
+- A set of system permissions
+- Optional project-specific permissions
 - A duration (lifetime in days)
 
 The generated robot credentials can be:
@@ -64,59 +68,72 @@ The generated robot credentials can be:
 - Copied to clipboard (default)
 - Exported to a JSON file with the -e flag
 
-Configuration File Format (YAML or JSON):
-  name: "robot-name"        # Required: Name of the robot account
-  description: "..."        # Optional: Description of the robot account
-  duration: 90              # Required: Lifetime in days
-  project: "project-name"   # Required: Project where the robot will be created
-  permissions:              # Required: At least one permission must be specified
-    - resource: "repository"  # Either specify a single resource
-      actions: ["pull", "push"]
-    - resources: ["artifact", "scan"]  # Or specify multiple resources
-      actions: ["read"]
-    - resource: "project"    # Use "*" as an action to grant all available actions
-      actions: ["*"]
-
 Examples:
   # Interactive mode
-  harbor-cli project robot create
+  harbor-cli robot create
 
   # Non-interactive mode with all flags
-  harbor-cli project robot create --project myproject --name ci-robot --description "CI pipeline" --duration 90
+  harbor-cli robot create --name ci-robot --description "CI pipeline" --duration 90
 
   # Create with all permissions
-  harbor-cli project robot create --project myproject --name ci-robot --all-permission
+  harbor-cli robot create --name ci-robot --all-permission
 
   # Load from configuration file
-  harbor-cli project robot create --robot-config-file ./robot-config.yaml
+  harbor-cli robot create --robot-config-file ./robot-config.yaml
 
   # Export secret to file
-  harbor-cli project robot create --project myproject --name ci-robot --export-to-file`,
+  harbor-cli robot create --name ci-robot --export-to-file`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
 			var permissions []models.Permission
-			// var projectPermissions []models.Permission
 			var projectPermissionsMap map[string][]models.Permission = make(map[string][]models.Permission)
 
-			// if configFile != "" {
-			// 	fmt.Println("Loading configuration from: ", configFile)
-			// 	loadedOpts, loadErr := config.LoadRobotConfigFromFile(configFile, "system")
-			// 	if loadErr != nil {
-			// 		return fmt.Errorf("failed to load robot config from file: %v", loadErr)
-			// 	}
-			// 	logrus.Info("Successfully loaded robot configuration")
-			// 	opts = *loadedOpts
-			// 	permissions = make([]models.Permission, len(opts.Permissions[0].Access))
-			// 	for i, access := range opts.Permissions[0].Access {
-			// 		permissions[i] = models.Permission{
-			// 			Resource: access.Resource,
-			// 			Action:   access.Action,
-			// 		}
-			// 	}
-			// }
-
 			if len(args) == 0 {
+				if configFile != "" {
+					fmt.Println("Loading configuration from: ", configFile)
+					loadedOpts, loadErr := config.LoadRobotConfigFromFile(configFile, "system")
+					if loadErr != nil {
+						return fmt.Errorf("failed to load robot config from file: %v", loadErr)
+					}
+					logrus.Info("Successfully loaded robot configuration")
+
+					opts = *loadedOpts
+
+					// Extract system-level permissions
+					var systemPermFound bool
+					for _, perm := range opts.Permissions {
+						if perm.Kind == "system" && perm.Namespace == "/" {
+							systemPermFound = true
+							permissions = make([]models.Permission, len(perm.Access))
+							for i, access := range perm.Access {
+								permissions[i] = models.Permission{
+									Resource: access.Resource,
+									Action:   access.Action,
+								}
+							}
+						} else if perm.Kind == "project" {
+							// Handle project-specific permissions
+							var projectPerms []models.Permission
+							for _, access := range perm.Access {
+								projectPerms = append(projectPerms, models.Permission{
+									Resource: access.Resource,
+									Action:   access.Action,
+								})
+							}
+							projectPermissionsMap[perm.Namespace] = projectPerms
+						}
+					}
+
+					if !systemPermFound {
+						return fmt.Errorf("system robot configuration must include system-level permissions")
+					}
+
+					// Skip interactive permission collection
+					logrus.Infof("Loaded system robot with %d system permissions and %d project-specific permissions",
+						len(permissions), len(projectPermissionsMap))
+				}
+
 				if (opts.Name == "" || opts.Duration == 0) && configFile == "" {
 					create.CreateRobotView(&opts)
 				}
@@ -154,28 +171,50 @@ Examples:
 					accessesSystem = append(accessesSystem, access)
 				}
 
-				if opts.ProjectName == "" {
-					// Start a loop to collect multiple projects and their permissions
-					for {
-						moreProjects, err := promptMoreProjects()
-						if err != nil {
-							return fmt.Errorf("error asking for more projects: %v", err)
-						}
-						if !moreProjects {
-							break
-						}
-						projectName, err := prompt.GetProjectNameFromUser()
-						if err != nil {
-							return fmt.Errorf("%v", utils.ParseHarborErrorMsg(err))
-						}
-						if projectName == "" {
-							return fmt.Errorf("project name cannot be empty")
-						}
-						projectPermissionsMap[projectName] = prompt.GetRobotPermissionsFromUser("project")
+				permissionMode, err := promptPermissionMode()
+				if err != nil {
+					return fmt.Errorf("error selecting permission mode: %v", err)
+				}
+
+				if permissionMode == "list" {
+					selectedProjects, err := getMultipleProjectsFromUser()
+					if err != nil {
+						return fmt.Errorf("error selecting projects: %v", err)
 					}
-				} else {
-					projectPermissions := prompt.GetRobotPermissionsFromUser("project")
-					projectPermissionsMap[opts.ProjectName] = projectPermissions
+
+					if len(selectedProjects) > 0 {
+						fmt.Println("Select permissions to apply to all selected projects:")
+						projectPermissions := prompt.GetRobotPermissionsFromUser("project")
+
+						for _, projectName := range selectedProjects {
+							projectPermissionsMap[projectName] = projectPermissions
+						}
+					}
+				} else if permissionMode == "per_project" {
+					if opts.ProjectName == "" {
+						for {
+							projectName, err := prompt.GetProjectNameFromUser()
+							if err != nil {
+								return fmt.Errorf("%v", utils.ParseHarborErrorMsg(err))
+							}
+							if projectName == "" {
+								return fmt.Errorf("project name cannot be empty")
+							}
+							projectPermissionsMap[projectName] = prompt.GetRobotPermissionsFromUser("project")
+							moreProjects, err := promptMoreProjects()
+							if err != nil {
+								return fmt.Errorf("error asking for more projects: %v", err)
+							}
+							if !moreProjects {
+								break
+							}
+						}
+					} else {
+						projectPermissions := prompt.GetRobotPermissionsFromUser("project")
+						projectPermissionsMap[opts.ProjectName] = projectPermissions
+					}
+				} else if permissionMode == "none" {
+					fmt.Println("Creating robot with system-level permissions only (no project-specific permissions)")
 				}
 
 				var mergedPermissions []*create.RobotPermission
@@ -267,6 +306,35 @@ func exportSecretToFile(name, secret, creationTime string, expiresAt int64) {
 	}
 }
 
+func getMultipleProjectsFromUser() ([]string, error) {
+	allProjects, err := api.ListAllProjects()
+	if err != nil {
+		return nil, fmt.Errorf("failed to list projects: %v", err)
+	}
+
+	var selectedProjects []string
+	projectOptions := []huh.Option[string]{}
+
+	for _, p := range allProjects.Payload {
+		projectOptions = append(projectOptions,
+			huh.NewOption(p.Name, p.Name))
+	}
+
+	err = huh.NewForm(
+		huh.NewGroup(
+			huh.NewNote().
+				Title("Multiple Project Selection").
+				Description("Select the projects to assign the same permissions to this robot account."),
+			huh.NewMultiSelect[string]().
+				Title("Select projects").
+				Options(projectOptions...).
+				Value(&selectedProjects),
+		),
+	).WithTheme(huh.ThemeCharm()).WithWidth(80).Run()
+
+	return selectedProjects, err
+}
+
 func promptMoreProjects() (bool, error) {
 	var addMore bool = false
 	err := huh.NewForm(
@@ -286,4 +354,26 @@ func promptMoreProjects() (bool, error) {
 	).WithTheme(huh.ThemeCharm()).WithWidth(60).WithHeight(10).Run()
 
 	return addMore, err
+}
+
+func promptPermissionMode() (string, error) {
+	var permissionMode string
+	err := huh.NewForm(
+		huh.NewGroup(
+			huh.NewNote().
+				Title("Permission Mode").
+				Description("Select how you want to assign permissions to projects:"),
+			huh.NewSelect[string]().
+				Title("Permission Mode").
+				Description("Choose 'List' to select multiple projects with common permissions, or 'Per Project' for individual project permissions.").
+				Options(
+					huh.NewOption("No project permissions (system-level only)", "none"),
+					huh.NewOption("Per Project", "per_project"),
+					huh.NewOption("List", "list"),
+				).
+				Value(&permissionMode),
+		),
+	).WithTheme(huh.ThemeCharm()).WithWidth(60).WithHeight(10).Run()
+
+	return permissionMode, err
 }
