@@ -1,0 +1,25 @@
+name: "system-scan-robot"
+description: "System robot for scanning and monitoring"
+duration: 365
+project: "/"
+level: "system"
+# System permissions
+permissions:
+  - resource: "scan-all"
+    actions: ["create", "read", "stop"]
+# Project-specific permissions
+projects:
+  - name: "demo"
+    permissions:
+      - resource: "repository"
+        actions: ["pull", "push", "list"]
+      - resource: "artifact"
+        actions: ["read", "list"]
+      - resource: "tag"
+        actions: ["create", "delete"]
+  - name: "demo8" 
+    permissions:
+      - resource: "repository"
+        actions: ["pull"]
+      - resource: "artifact"
+        actions: ["read", "list"]
