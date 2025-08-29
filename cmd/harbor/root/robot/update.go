@@ -208,52 +208,21 @@ func handleInteractiveInputForUpdate(opts *update.UpdateView, all bool, permissi
 	}
 
 	// Get system permissions
-	if err := getSystemPermissionsForUpdate(all, permissions); err != nil {
-		return err
-	}
-
-	// Get project permissions
-	return getProjectPermissionsForUpdate(opts, projectPermissionsMap)
-}
-
-func getSystemPermissionsForUpdate(all bool, permissions *[]models.Permission) error {
-	var updateSystem bool
-	err := huh.NewForm(
-		huh.NewGroup(
-			huh.NewSelect[bool]().
-				Title("Do you want to update system permissions?").
-				Options(
-					huh.NewOption("No", false),
-					huh.NewOption("Yes", true),
-				).
-				Value(&updateSystem),
-		),
-	).WithTheme(huh.ThemeCharm()).WithWidth(60).Run()
-
+	updateSystem, err := prompt.GetSystemPermissionsUpdateDecisionFromUser()
 	if err != nil {
 		return fmt.Errorf("error asking about system permission updates: %v", err)
 	}
 
 	if !updateSystem {
 		logrus.Info("Keeping existing system permissions")
-		return nil
+	} else {
+		if err := getSystemPermissionsFromUser(all, permissions); err != nil {
+			return err
+		}
 	}
 
-	if all {
-		perms, _ := api.GetPermissions()
-		*permissions = nil // Clear existing permissions
-		for _, perm := range perms.Payload.System {
-			*permissions = append(*permissions, *perm)
-		}
-	} else {
-		newPermissions := prompt.GetRobotPermissionsFromUser("system")
-		if len(newPermissions) == 0 {
-			return fmt.Errorf("failed to update robot: %v",
-				utils.ParseHarborErrorMsg(fmt.Errorf("no permissions selected, robot account needs at least one permission")))
-		}
-		*permissions = newPermissions
-	}
-	return nil
+	// Get project permissions
+	return getProjectPermissionsForUpdate(opts, projectPermissionsMap)
 }
 
 func getProjectPermissionsForUpdate(opts *update.UpdateView, projectPermissionsMap map[string][]models.Permission) error {

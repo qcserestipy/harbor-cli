@@ -17,8 +17,11 @@ import (
 	"fmt"
 
 	"github.com/goharbor/go-client/pkg/sdk/v2.0/models"
+	"github.com/goharbor/harbor-cli/pkg/api"
 	config "github.com/goharbor/harbor-cli/pkg/config/robot"
 	rmodel "github.com/goharbor/harbor-cli/pkg/models/robot"
+	"github.com/goharbor/harbor-cli/pkg/prompt"
+	"github.com/goharbor/harbor-cli/pkg/utils"
 	"github.com/goharbor/harbor-cli/pkg/views/robot/create"
 	"github.com/goharbor/harbor-cli/pkg/views/robot/update"
 	"github.com/sirupsen/logrus"
@@ -126,6 +129,21 @@ func buildMergedPermissions(projectPermissionsMap map[string][]models.Permission
 		Access:    accessesSystem,
 		Kind:      "system",
 	})
-
 	return mergedPermissions
+}
+
+func getSystemPermissionsFromUser(all bool, permissions *[]models.Permission) error {
+	if all {
+		perms, _ := api.GetPermissions()
+		for _, perm := range perms.Payload.System {
+			*permissions = append(*permissions, *perm)
+		}
+	} else {
+		*permissions = prompt.GetRobotPermissionsFromUser("system")
+		if len(*permissions) == 0 {
+			return fmt.Errorf("failed to create robot: %v",
+				utils.ParseHarborErrorMsg(fmt.Errorf("no permissions selected, robot account needs at least one permission")))
+		}
+	}
+	return nil
 }
