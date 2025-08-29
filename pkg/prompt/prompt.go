@@ -19,6 +19,7 @@ import (
 
 	"strconv"
 
+	"github.com/charmbracelet/huh"
 	"github.com/goharbor/harbor-cli/pkg/utils"
 	list "github.com/goharbor/harbor-cli/pkg/views/context/switch"
 
@@ -349,4 +350,23 @@ func GetReplicationExecutionIDFromUser(rpolicyID int64) int64 {
 	}()
 
 	return <-executionID
+}
+
+func GetSystemPermissionsUpdateDecisionFromUser() (bool, error) {
+	var updateSystem bool
+	err := huh.NewForm(
+		huh.NewGroup(
+			huh.NewSelect[bool]().
+				Title("Do you want to update system permissions?").
+				Options(
+					huh.NewOption("No", false),
+					huh.NewOption("Yes", true),
+				).
+				Value(&updateSystem),
+		),
+	).WithTheme(huh.ThemeCharm()).WithWidth(60).Run()
+	if err != nil {
+		return false, fmt.Errorf("error during user input: %w", err)
+	}
+	return updateSystem, nil
 }

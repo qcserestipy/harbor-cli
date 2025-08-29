@@ -133,30 +133,12 @@ func handleInteractiveInput(opts *create.CreateView, all bool, permissions *[]mo
 	}
 
 	// Get system permissions
-	if err := getSystemPermissions(all, permissions); err != nil {
+	if err := getSystemPermissionsFromUser(all, permissions); err != nil {
 		return err
 	}
 
 	// Get project permissions
 	return getProjectPermissions(opts, projectPermissionsMap)
-}
-
-func getSystemPermissions(all bool, permissions *[]models.Permission) error {
-	if len(*permissions) == 0 {
-		if all {
-			perms, _ := api.GetPermissions()
-			for _, perm := range perms.Payload.System {
-				*permissions = append(*permissions, *perm)
-			}
-		} else {
-			*permissions = prompt.GetRobotPermissionsFromUser("system")
-			if len(*permissions) == 0 {
-				return fmt.Errorf("failed to create robot: %v",
-					utils.ParseHarborErrorMsg(fmt.Errorf("no permissions selected, robot account needs at least one permission")))
-			}
-		}
-	}
-	return nil
 }
 
 func getProjectPermissions(opts *create.CreateView, projectPermissionsMap map[string][]models.Permission) error {
