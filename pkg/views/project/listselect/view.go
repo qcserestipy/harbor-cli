@@ -16,7 +16,6 @@ package project
 import (
 	"errors"
 	"fmt"
-	"os"
 
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
@@ -34,10 +33,10 @@ func ProjectsList(projects []*models.Project) ([]string, error) {
 
 	m := listselect.NewModel(items, "Project")
 
-	p, err := tea.NewProgram(m).Run()
+	p, err := tea.NewProgram(m, tea.WithAltScreen()).Run()
+
 	if err != nil {
-		fmt.Println("Error running program:", err)
-		os.Exit(1)
+		return nil, fmt.Errorf("error running selection program: %w", err)
 	}
 
 	if model, ok := p.(listselect.Model); ok {
