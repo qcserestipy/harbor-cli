@@ -73,7 +73,7 @@ func NewModel(items []list.Item, construct string) Model {
 	selected := make(map[int]struct{})
 	l := list.New(items, ItemDelegate{Selected: &selected}, defaultWidth, listHeight)
 	l.Title = "Select one or more " + construct + " (space to toggle, enter to confirm)"
-	l.SetShowStatusBar(false)
+	l.SetShowStatusBar(true)
 	l.SetFilteringEnabled(true)
 	l.Styles.Title = views.TitleStyle
 	l.Styles.PaginationStyle = views.PaginationStyle
@@ -103,6 +103,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			return m, nil
 		case "enter":
+			if len(m.Selected) == 0 {
+				cmd := m.List.NewStatusMessage("!! Please select at least one item !!")
+				return m, cmd
+			}
 			for idx := range m.Selected {
 				if i, ok := m.List.Items()[idx].(Item); ok {
 					m.Choices = append(m.Choices, string(i))
