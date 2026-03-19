@@ -11,17 +11,25 @@ The **Harbor CLI** is a powerful command-line tool to interact with the [Harbor 
 
 ### Run using Container
 
-You can try the CLI immediately using Docker:
+Running Harbor CLI as a container is simple. Use the following command to get started:
 
-```bash
-docker run -ti --rm -v $HOME/.harbor/config.yaml:/root/.harbor/config.yaml registry.goharbor.io/harbor-cli/harbor-cli --help
+```shell
+docker run -ti --rm -v $HOME/.config/harbor-cli:/root/.config/harbor-cli \
+  -e HARBOR_ENCRYPTION_KEY=$(echo "ThisIsAVeryLongPassword" | base64) \
+  registry.goharbor.io/harbor-cli/harbor-cli \
+  --help
 ```
+Use the `HARBOR_ENCRYPTION_KEY` container environment variable as a base64-encoded 32-byte key for AES-256 encryption. This securely stores your harbor login password.
 
-### Alias (Optional)
+If you intend to run the CLI as a container, it is advised
+to set the following environment variables and to create an alias
+and append the alias to your .zshrc or .bashrc file
 
-```bash
-echo "alias harbor='docker run -ti --rm -v \$HOME/.harbor/config.yaml:/root/.harbor/config.yaml registry.goharbor.io/harbor-cli/harbor-cli'" >> ~/.zshrc
-source ~/.zshrc
+```shell
+echo "export HARBOR_CLI_CONFIG=\$HOME/.config/harbor-cli" >> ~/.zshrc
+echo "export HARBOR_ENCRYPTION_KEY=\$(cat <path_to_32bit_private_key_file> | base64)" >> ~/.zshrc
+echo "alias harbor='docker run -ti --rm -v \$HARBOR_CLI_CONFIG:/root/.config/harbor-cli -e HARBOR_ENCRYPTION_KEY=\$HARBOR_ENCRYPTION_KEY registry.goharbor.io/harbor-cli/harbor-cli'" >> ~/.zshrc 
+source ~/.zshrc # or restart your terminal
 ```
 
 ### Build from Source
