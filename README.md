@@ -64,7 +64,7 @@ The project's first goal is to reach WebUI parity.
 Running Harbor CLI as a container is simple. Use the following command to get started:
 
 ```shell
-docker run -ti --rm -v $HOME/.config/harbor-cli/config.yaml:/root/.config/harbor-cli/config.yaml \
+docker run -ti --rm -v $HOME/.config/harbor-cli:/root/.config/harbor-cli \
   -e HARBOR_ENCRYPTION_KEY=$(echo "ThisIsAVeryLongPassword" | base64) \
   registry.goharbor.io/harbor-cli/harbor-cli \
   --help
@@ -76,9 +76,9 @@ to set the following environment variables and to create an alias
 and append the alias to your .zshrc or .bashrc file
 
 ```shell
-echo "export HARBOR_CLI_CONFIG=\$HOME/.config/harbor-cli/config.yaml" >> ~/.zshrc
+echo "export HARBOR_CLI_CONFIG=\$HOME/.config/harbor-cli" >> ~/.zshrc
 echo "export HARBOR_ENCRYPTION_KEY=\$(cat <path_to_32bit_private_key_file> | base64)" >> ~/.zshrc
-echo "alias harbor='docker run -ti --rm -v \$HARBOR_CLI_CONFIG:/root/.config/harbor-cli/config.yaml -e HARBOR_ENCRYPTION_KEY=\$HARBOR_ENCRYPTION_KEY registry.goharbor.io/harbor-cli/harbor-cli'" >> ~/.zshrc 
+echo "alias harbor='docker run -ti --rm -v \$HARBOR_CLI_CONFIG:/root/.config/harbor-cli -e HARBOR_ENCRYPTION_KEY=\$HARBOR_ENCRYPTION_KEY registry.goharbor.io/harbor-cli/harbor-cli'" >> ~/.zshrc 
 source ~/.zshrc # or restart your terminal
 ```
 
