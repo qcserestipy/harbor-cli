@@ -20,6 +20,7 @@ import (
 
 	"github.com/charmbracelet/huh"
 	"github.com/goharbor/harbor-cli/pkg/utils"
+	"github.com/goharbor/harbor-cli/pkg/views/base/selection"
 	list "github.com/goharbor/harbor-cli/pkg/views/context/switch"
 
 	"github.com/goharbor/go-client/pkg/sdk/v2.0/models"
@@ -518,4 +519,19 @@ func GetRoleIDFromUser() int64 {
 	}()
 
 	return <-roleID
+}
+
+func PromptPermissionMode() (string, error) {
+	options := []string{
+		"none",
+		"per_project",
+		"list",
+	}
+	permissionMode, err := selection.SelectFromOptionsListString(
+		options,
+		"Permission Mode", "Choose 'list' to select multiple projects with common \npermissions, or 'per_project' for individual project \npermissions or 'none' for no project permissions (system-level only).")
+	if err != nil {
+		return "", err
+	}
+	return permissionMode, err
 }

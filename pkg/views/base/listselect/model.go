@@ -18,6 +18,7 @@ import (
 	"io"
 	"strings"
 
+	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/goharbor/harbor-cli/pkg/views"
@@ -75,9 +76,25 @@ func NewModel(items []list.Item, construct string) Model {
 	l.Title = "Select one or more " + construct + " (space to toggle, enter to confirm)"
 	l.SetShowStatusBar(true)
 	l.SetFilteringEnabled(true)
+	l.SetShowHelp(true)
 	l.Styles.Title = views.TitleStyle
 	l.Styles.PaginationStyle = views.PaginationStyle
 	l.Styles.HelpStyle = views.HelpStyle
+
+	toggleKey := key.NewBinding(
+		key.WithKeys(" "),
+		key.WithHelp("space", "toggle"),
+	)
+	confirmKey := key.NewBinding(
+		key.WithKeys("enter"),
+		key.WithHelp("enter", "confirm"),
+	)
+	l.AdditionalShortHelpKeys = func() []key.Binding {
+		return []key.Binding{toggleKey, confirmKey}
+	}
+	l.AdditionalFullHelpKeys = func() []key.Binding {
+		return []key.Binding{toggleKey, confirmKey}
+	}
 
 	return Model{List: l, Selected: selected}
 }
@@ -116,6 +133,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c", "esc":
 			m.Aborted = true
 			return m, tea.Quit
+		case "up", "k":
+			m.List.CursorUp()
+			return m, nil
+		case "down", "j":
+			m.List.CursorDown()
+			return m, nil
 		}
 	}
 
