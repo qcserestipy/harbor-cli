@@ -132,6 +132,10 @@ func loadFromConfigFile(opts *create.CreateView, configFile string, permissions 
 	logrus.Info("Successfully loaded robot configuration")
 	*opts = *loadedOpts
 
+	if opts.Level != "system" {
+		return fmt.Errorf("invalid robot configuration: level must be 'system'. If you try to create a project-level robot, please run the `harbor-cli project robot create` command instead.")
+	}
+
 	// Extract system-level and project permissions
 	var systemPermFound bool
 	for _, perm := range opts.Permissions {

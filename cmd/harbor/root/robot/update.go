@@ -201,6 +201,10 @@ func loadFromConfigFileForUpdate(opts *update.UpdateView, configFile string, per
 		opts.Duration = loadedOpts.Duration
 	}
 
+	if loadedOpts.Level != "system" {
+		return fmt.Errorf("invalid robot configuration: level must be 'system'. If you try to update a project-level robot, please run the `harbor-cli project robot update` command instead.")
+	}
+
 	var systemPermFound bool
 	for _, perm := range loadedOpts.Permissions {
 		if perm.Kind == "system" && perm.Namespace == "/" {
