@@ -205,10 +205,8 @@ func loadFromConfigFileForUpdate(opts *update.UpdateView, configFile string, per
 		return fmt.Errorf("invalid robot configuration: level must be 'system'. If you try to update a project-level robot, please run the `harbor-cli project robot update` command instead.")
 	}
 
-	var systemPermFound bool
 	for _, perm := range loadedOpts.Permissions {
 		if perm.Kind == "system" && perm.Namespace == "/" {
-			systemPermFound = true
 			for _, access := range perm.Access {
 				*permissions = append(*permissions, models.Permission{
 					Resource: access.Resource,
@@ -230,10 +228,6 @@ func loadFromConfigFileForUpdate(opts *update.UpdateView, configFile string, per
 			}
 			projectPermissionsMap[perm.Namespace] = validProjectPerms
 		}
-	}
-
-	if !systemPermFound {
-		return fmt.Errorf("robot configuration must include system-level permissions")
 	}
 
 	logrus.Infof("Loaded robot update with %d system permissions and %d project-specific permissions",

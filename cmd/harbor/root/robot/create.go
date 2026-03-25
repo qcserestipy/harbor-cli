@@ -137,10 +137,8 @@ func loadFromConfigFile(opts *create.CreateView, configFile string, permissions 
 	}
 
 	// Extract system-level and project permissions
-	var systemPermFound bool
 	for _, perm := range opts.Permissions {
 		if perm.Kind == "system" && perm.Namespace == "/" {
-			systemPermFound = true
 			*permissions = make([]models.Permission, len(perm.Access))
 			for i, access := range perm.Access {
 				(*permissions)[i] = models.Permission{
@@ -158,10 +156,6 @@ func loadFromConfigFile(opts *create.CreateView, configFile string, permissions 
 			}
 			projectPermissionsMap[perm.Namespace] = projectPerms
 		}
-	}
-
-	if !systemPermFound {
-		return fmt.Errorf("system robot configuration must include system-level permissions")
 	}
 
 	logrus.Infof("Loaded system robot with %d system permissions and %d project-specific permissions",
@@ -308,12 +302,15 @@ func buildMergedPermissions(projectPermissionsMap map[string][]models.Permission
 		})
 	}
 
-	// Add system permissions
-	mergedPermissions = append(mergedPermissions, &create.RobotPermission{
-		Namespace: "/",
-		Access:    accessesSystem,
-		Kind:      "system",
-	})
+	// check whether system permissions are included
+	if len(accessesSystem) > 0 {
+		// Add system permissions
+		mergedPermissions = append(mergedPermissions, &create.RobotPermission{
+			Namespace: "/",
+			Access:    accessesSystem,
+			Kind:      "system",
+		})
+	}
 
 	return mergedPermissions
 }
