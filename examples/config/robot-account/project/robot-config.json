@@ -24,7 +24,7 @@
         }
       ],
       "kind": "project",
-      "namespace": "demo"
+      "namespace": "*"
     }
   ]
 }
