@@ -19,7 +19,6 @@ import (
 	"os"
 
 	"github.com/atotto/clipboard"
-	"github.com/charmbracelet/huh"
 	"github.com/goharbor/go-client/pkg/sdk/v2.0/models"
 	"github.com/goharbor/harbor-cli/pkg/api"
 	config "github.com/goharbor/harbor-cli/pkg/config/robot"
@@ -209,7 +208,7 @@ func getSystemPermissions(all bool, permissions *[]models.Permission) error {
 }
 
 func getProjectPermissions(opts *create.CreateView, projectPermissionsMap map[string][]models.Permission) error {
-	permissionMode, err := promptPermissionMode()
+	permissionMode, err := prompt.PromptPermissionMode()
 	if err != nil {
 		return fmt.Errorf("error selecting permission mode: %v", err)
 	}
@@ -378,26 +377,4 @@ func exportSecretToFile(name, secret, creationTime string, expiresAt int64) {
 	}
 
 	fmt.Printf("Secret saved to %s\n", filename)
-}
-
-func promptPermissionMode() (string, error) {
-	var permissionMode string
-	err := huh.NewForm(
-		huh.NewGroup(
-			huh.NewNote().
-				Title("Permission Mode").
-				Description("Select how you want to assign permissions to projects:"),
-			huh.NewSelect[string]().
-				Title("Permission Mode").
-				Description("Choose 'List' to select multiple projects with common permissions, or 'Per Project' for individual project permissions.").
-				Options(
-					huh.NewOption("No project permissions (system-level only)", "none"),
-					huh.NewOption("Per Project", "per_project"),
-					huh.NewOption("List", "list"),
-				).
-				Value(&permissionMode),
-		),
-	).WithTheme(huh.ThemeCharm()).WithWidth(60).WithHeight(10).Run()
-
-	return permissionMode, err
 }

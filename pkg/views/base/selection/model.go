@@ -20,6 +20,7 @@ import (
 
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/goharbor/harbor-cli/pkg/views"
 )
 
@@ -58,7 +59,7 @@ type Model struct {
 	Aborted bool
 }
 
-func NewModel(items []list.Item, construct string) Model {
+func NewModel(items []list.Item, construct string, description ...string) Model {
 	const defaultWidth = 20
 	l := list.New(items, ItemDelegate{}, defaultWidth, listHeight)
 	l.Title = "Select a " + construct
@@ -67,7 +68,10 @@ func NewModel(items []list.Item, construct string) Model {
 	l.Styles.Title = views.TitleStyle
 	l.Styles.PaginationStyle = views.PaginationStyle
 	l.Styles.HelpStyle = views.HelpStyle
-
+	if len(description) > 0 {
+		subtitle := lipgloss.NewStyle().Faint(true).Render(strings.Join(description, " "))
+		l.Title = l.Title + "\n" + subtitle
+	}
 	return Model{List: l}
 }
 
