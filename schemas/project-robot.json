@@ -1,0 +1,45 @@
+{
+  "$id": "project-robot.json",
+  "type": "object",
+  "required": ["name", "duration", "level", "permissions"],
+  "properties": {
+    "name": { "type": "string" },
+    "description": { "type": "string" },
+    "duration": { "type": "integer", "minimum": 1 },
+    "level": {
+      "type": "string",
+      "enum": ["project"]
+    },
+    "permissions": {
+      "type": "array",
+      "items": {
+        "$ref": "permissions.json"
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "level": { "const": "project" }
+        }
+      },
+      "then": {
+        "properties": {
+          "permissions": {
+            "items": {
+              "properties": {
+                "kind": {
+                  "not": { "const": "system" }
+                },
+                "namespace": {
+                  "not": { "pattern": "^/.*$" }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

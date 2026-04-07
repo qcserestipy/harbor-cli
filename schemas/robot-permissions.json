@@ -1,0 +1,41 @@
+{
+  "$id": "robot-permissions.json",
+  "type": "object",
+  "required": ["access", "kind", "namespace"],
+  "properties": {
+    "kind": {
+      "type": "string",
+      "enum": ["project", "system"]
+    },
+    "namespace": {
+      "type": "string"
+    },
+    "access": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["resource", "actions"],
+        "properties": {
+          "resource": { "type": "string" },
+          "actions": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    }
+  },
+
+  "if": {
+    "properties": {
+      "kind": { "const": "project" }
+    }
+  },
+  "then": {
+    "properties": {
+      "namespace": {
+        "pattern": "^[^*]+$"
+      }
+    }
+  }
+}
