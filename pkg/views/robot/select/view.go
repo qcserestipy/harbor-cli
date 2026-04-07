@@ -56,6 +56,10 @@ func NewRobotPermissionsGrid(kind string) (*tablegrid.TableGrid, error) {
 		return nil, fmt.Errorf("invalid kind specified: %s, expected 'system' or 'project'", kind)
 	}
 
+	for resource, actions := range availablePerms {
+		fmt.Printf("Resource: %s, Actions: %v\n", resource, actions)
+	}
+
 	// Extract and sort resource keys for deterministic ordering
 	resourceKeys := make([]string, 0, len(availablePerms))
 	for key := range availablePerms {
