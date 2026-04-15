@@ -215,7 +215,6 @@ func validateClientConnection(client *client.HarborAPI) error {
 		if strings.HasPrefix(errorCode, "4") {
 			return fmt.Errorf("authentication failed, check your credentials: %v", utils.ParseHarborErrorMsg(err))
 		} else if strings.HasPrefix(errorCode, "5") {
-
 			// For 5xx errors, we can also check if the server is reachable at all by trying a ping. If the ping fails, we can provide a more specific message about connectivity issues.
 			_, projectErr := client.Project.ListProjects(ctx, &project.ListProjectsParams{
 				Page:     func(v int64) *int64 { return &v }(int64(1)),
