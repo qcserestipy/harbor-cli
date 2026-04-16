@@ -211,31 +211,35 @@ func validateClientConnection(client *client.HarborAPI) error {
 	_, err := client.User.GetCurrentUserInfo(ctx, &user.GetCurrentUserInfoParams{})
 	if err != nil {
 		errorCode := utils.ParseHarborErrorCode(err)
-		// If it's a 4xx error, it's likely an authentication issue. If it's a 5xx error, it could be a server issue. We can provide more specific error messages based on that.
-		if strings.HasPrefix(errorCode, "4") {
+		// 401/403 = definite auth failure
+		if errorCode == "401" || errorCode == "403" {
 			return fmt.Errorf("authentication failed, check your credentials: %v", utils.ParseHarborErrorMsg(err))
-		} else if strings.HasPrefix(errorCode, "5") {
-			// For 5xx errors, we can also check if the server is reachable at all by trying a ping. If the ping fails, we can provide a more specific message about connectivity issues.
-			_, projectErr := client.Project.ListProjects(ctx, &project.ListProjectsParams{
-				Page:     func(v int64) *int64 { return &v }(int64(1)),
-				PageSize: func(v int64) *int64 { return &v }(int64(1)),
-			})
-			_, pingErr := client.Ping.GetPing(ctx, &ping.GetPingParams{})
-			var results []string
-			if projectErr != nil {
-				results = append(results, fmt.Sprintf("ListProjects failed: %v", projectErr))
-			} else {
-				results = append(results, "ListProjects succeeded")
-			}
-			if pingErr != nil {
-				results = append(results, fmt.Sprintf("Ping failed: %v", pingErr))
-			} else {
-				results = append(results, "Ping succeeded")
-			}
-			return fmt.Errorf("server error: %v (%s)", utils.ParseHarborErrorMsg(err), strings.Join(results, "; "))
-		} else {
-			return fmt.Errorf("failed to connect to Harbor server: %v", utils.ParseHarborErrorMsg(err))
 		}
+		// For 5xx or unexpected status codes (e.g. 412 for robot accounts),
+		// check secondary endpoints to verify server reachability and auth.
+		_, projectErr := client.Project.ListProjects(ctx, &project.ListProjectsParams{
+			Page:     func(v int64) *int64 { return &v }(int64(1)),
+			PageSize: func(v int64) *int64 { return &v }(int64(1)),
+		})
+		_, pingErr := client.Ping.GetPing(ctx, &ping.GetPingParams{})
+
+		// Both secondary checks passed means credentials and server are fine
+		if projectErr == nil && pingErr == nil {
+			return nil
+		}
+
+		var results []string
+		if projectErr != nil {
+			results = append(results, fmt.Sprintf("ListProjects failed: %v", projectErr))
+		} else {
+			results = append(results, "ListProjects succeeded")
+		}
+		if pingErr != nil {
+			results = append(results, fmt.Sprintf("Ping failed: %v", pingErr))
+		} else {
+			results = append(results, "Ping succeeded")
+		}
+		return fmt.Errorf("server error (status %s): %v (%s)", errorCode, utils.ParseHarborErrorMsg(err), strings.Join(results, "; "))
 	}
 	return nil
 }
