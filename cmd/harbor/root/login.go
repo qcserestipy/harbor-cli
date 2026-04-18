@@ -23,7 +23,7 @@ import (
 	"github.com/goharbor/go-client/pkg/sdk/v2.0/client"
 	"github.com/goharbor/go-client/pkg/sdk/v2.0/client/ping"
 	"github.com/goharbor/go-client/pkg/sdk/v2.0/client/project"
-	"github.com/goharbor/go-client/pkg/sdk/v2.0/client/systeminfo"
+	"github.com/goharbor/go-client/pkg/sdk/v2.0/client/user"
 	"github.com/goharbor/harbor-cli/pkg/utils"
 	"github.com/goharbor/harbor-cli/pkg/views/login"
 	log "github.com/sirupsen/logrus"
@@ -208,38 +208,51 @@ func RunLogin(opts login.LoginView) error {
 
 func validateClientConnection(client *client.HarborAPI) error {
 	ctx := context.Background()
-	_, err := client.Systeminfo.GetSystemInfo(ctx, &systeminfo.GetSystemInfoParams{})
-	if err != nil {
-		errorCode := utils.ParseHarborErrorCode(err)
-		// 401/403 = definite auth failure
-		if errorCode == "401" || errorCode == "403" {
-			return fmt.Errorf("authentication failed, check your credentials: %v", utils.ParseHarborErrorMsg(err))
-		}
-		// For 5xx or unexpected status codes (e.g. 412 for robot accounts),
-		// check secondary endpoints to verify server reachability and auth.
-		_, projectErr := client.Project.ListProjects(ctx, &project.ListProjectsParams{
-			Page:     func(v int64) *int64 { return &v }(int64(1)),
-			PageSize: func(v int64) *int64 { return &v }(int64(1)),
-		})
-		_, pingErr := client.Ping.GetPing(ctx, &ping.GetPingParams{})
 
-		// Both secondary checks passed means credentials and server are fine
-		if projectErr == nil && pingErr == nil {
-			return nil
-		}
-
-		var results []string
-		if projectErr != nil {
-			results = append(results, fmt.Sprintf("ListProjects failed: %v", projectErr))
-		} else {
-			results = append(results, "ListProjects succeeded")
-		}
-		if pingErr != nil {
-			results = append(results, fmt.Sprintf("Ping failed: %v", pingErr))
-		} else {
-			results = append(results, "Ping succeeded")
-		}
-		return fmt.Errorf("server error (status %s): %v (%s)", errorCode, utils.ParseHarborErrorMsg(err), strings.Join(results, "; "))
+	// Primary check: GetCurrentUserInfo requires auth → 401 for bad creds.
+	_, err := client.User.GetCurrentUserInfo(ctx, &user.GetCurrentUserInfoParams{})
+	if err == nil {
+		return nil
 	}
-	return nil
+
+	errorCode := utils.ParseHarborErrorCode(err)
+	// 401/403 = definite auth failure
+	if errorCode == "401" || errorCode == "403" {
+		return fmt.Errorf("authentication failed, check your credentials: %v", utils.ParseHarborErrorMsg(err))
+	}
+
+	// For other errors (e.g. 412 for robot/OIDC accounts, 5xx),
+	// fall back to secondary endpoints to verify creds and reachability.
+	_, projectErr := client.Project.ListProjects(ctx, &project.ListProjectsParams{
+		Page:     func(v int64) *int64 { return &v }(int64(1)),
+		PageSize: func(v int64) *int64 { return &v }(int64(1)),
+	})
+	_, pingErr := client.Ping.GetPing(ctx, &ping.GetPingParams{})
+
+	// If either secondary check returns 401/403, creds are bad.
+	if projectErr != nil {
+		projCode := utils.ParseHarborErrorCode(projectErr)
+		if projCode == "401" || projCode == "403" {
+			return fmt.Errorf("authentication failed, check your credentials: %v", utils.ParseHarborErrorMsg(projectErr))
+		}
+	}
+
+	// Both passed → creds valid, server reachable
+	if projectErr == nil && pingErr == nil {
+		return nil
+	}
+
+	// Build diagnostic message
+	var results []string
+	if projectErr != nil {
+		results = append(results, fmt.Sprintf("ListProjects failed: %v", projectErr))
+	} else {
+		results = append(results, "ListProjects succeeded")
+	}
+	if pingErr != nil {
+		results = append(results, fmt.Sprintf("Ping failed: %v", pingErr))
+	} else {
+		results = append(results, "Ping succeeded")
+	}
+	return fmt.Errorf("server error (status %s): %v (%s)", errorCode, utils.ParseHarborErrorMsg(err), strings.Join(results, "; "))
 }
