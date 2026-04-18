@@ -23,7 +23,7 @@ import (
 	"github.com/goharbor/go-client/pkg/sdk/v2.0/client"
 	"github.com/goharbor/go-client/pkg/sdk/v2.0/client/ping"
 	"github.com/goharbor/go-client/pkg/sdk/v2.0/client/project"
-	"github.com/goharbor/go-client/pkg/sdk/v2.0/client/user"
+	"github.com/goharbor/go-client/pkg/sdk/v2.0/client/systeminfo"
 	"github.com/goharbor/harbor-cli/pkg/utils"
 	"github.com/goharbor/harbor-cli/pkg/views/login"
 	log "github.com/sirupsen/logrus"
@@ -208,7 +208,7 @@ func RunLogin(opts login.LoginView) error {
 
 func validateClientConnection(client *client.HarborAPI) error {
 	ctx := context.Background()
-	_, err := client.User.GetCurrentUserInfo(ctx, &user.GetCurrentUserInfoParams{})
+	_, err := client.Systeminfo.GetSystemInfo(ctx, &systeminfo.GetSystemInfoParams{})
 	if err != nil {
 		errorCode := utils.ParseHarborErrorCode(err)
 		// 401/403 = definite auth failure
