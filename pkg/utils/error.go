@@ -34,7 +34,7 @@ func ParseHarborErrorMsg(err error) string {
 	}
 
 	val := reflect.ValueOf(err)
-	if val.Kind() == reflect.Ptr {
+	if val.Kind() == reflect.Ptr { //nolint:govet
 		val = val.Elem()
 	}
 	field := val.FieldByName("Payload")

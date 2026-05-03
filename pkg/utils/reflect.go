@@ -133,7 +133,7 @@ func ExtractConfigValues[T ConfigType](cfg T) map[string]any {
 		field := v.Field(i)
 		fieldName := t.Field(i).Name
 		// Skip nil pointers
-		if field.Kind() == reflect.Ptr && field.IsNil() {
+		if field.Kind() == reflect.Ptr && field.IsNil() { //nolint:govet
 			continue
 		}
 		configItem := field.Interface()
@@ -154,7 +154,7 @@ func ExtractConfigValues[T ConfigType](cfg T) map[string]any {
 		default:
 			// Handle generic pointer types using reflection
 			val := reflect.ValueOf(configItem)
-			if val.Kind() == reflect.Ptr && !val.IsNil() {
+			if val.Kind() == reflect.Ptr && !val.IsNil() { //nolint:govet
 				deref := val.Elem()
 				// Only include non-zero values
 				if deref.IsValid() && !deref.IsZero() {
