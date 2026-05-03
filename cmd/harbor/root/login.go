@@ -224,8 +224,8 @@ func validateClientConnection(client *client.HarborAPI) error {
 	// For other errors (e.g. 412 for robot/OIDC accounts, 5xx),
 	// fall back to secondary endpoints to verify creds and reachability.
 	_, projectErr := client.Project.ListProjects(ctx, &project.ListProjectsParams{
-		Page:     func(v int64) *int64 { return &v }(int64(1)),
-		PageSize: func(v int64) *int64 { return &v }(int64(1)),
+		Page:     new(int64(1)),
+		PageSize: new(int64(1)),
 	})
 	_, pingErr := client.Ping.GetPing(ctx, &ping.GetPingParams{})
 
