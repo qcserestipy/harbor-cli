@@ -57,14 +57,16 @@ The project's first goal is to reach WebUI parity.
 
 ```
 
-# Installation
+# Install
 
-## Container 
+For additional artifacts like archives, checksums and SBOMs, refer to the [releases page](https://github.com/goharbor/harbor-cli/releases).
+
+### Container 
 
 Running Harbor CLI as a container is simple. Use the following command to get started:
 
 ```shell
-docker run -ti --rm -v $HOME/.config/harbor-cli/config.yaml:/root/.config/harbor-cli/config.yaml \
+docker run -ti --rm -v $HOME/.config/harbor-cli:/root/.config/harbor-cli \
   -e HARBOR_ENCRYPTION_KEY=$(echo "ThisIsAVeryLongPassword" | base64) \
   registry.goharbor.io/harbor-cli/harbor-cli \
   --help
@@ -76,21 +78,48 @@ to set the following environment variables and to create an alias
 and append the alias to your .zshrc or .bashrc file
 
 ```shell
-echo "export HARBOR_CLI_CONFIG=\$HOME/.config/harbor-cli/config.yaml" >> ~/.zshrc
+echo "export HARBOR_CLI_CONFIG=\$HOME/.config/harbor-cli" >> ~/.zshrc
 echo "export HARBOR_ENCRYPTION_KEY=\$(cat <path_to_32bit_private_key_file> | base64)" >> ~/.zshrc
-echo "alias harbor='docker run -ti --rm -v \$HARBOR_CLI_CONFIG:/root/.config/harbor-cli/config.yaml -e HARBOR_ENCRYPTION_KEY=\$HARBOR_ENCRYPTION_KEY registry.goharbor.io/harbor-cli/harbor-cli'" >> ~/.zshrc 
+echo "alias harbor='docker run -ti --rm -v \$HARBOR_CLI_CONFIG:/root/.config/harbor-cli -e HARBOR_ENCRYPTION_KEY=\$HARBOR_ENCRYPTION_KEY registry.goharbor.io/harbor-cli/harbor-cli'" >> ~/.zshrc 
 source ~/.zshrc # or restart your terminal
 ```
 
-## Linux, macOS and Windows
-
-On Linux and macOS, you can use Homebrew:
+### Homebrew(Linux/macOS) 
 
 ```bash
 brew install harbor-cli
 ```
 
-Otherwise, you can download the binary from the [releases page](https://github.com/goharbor/harbor-cli/releases).
+### Debian/Ubuntu(.deb)
+
+> Replace `<version>` with the desired release version (e.g., v0.x.x).
+
+```bash
+wget https://github.com/goharbor/harbor-cli/releases/download/<version>/harbor-cli_<version>_linux_amd64.deb
+sudo dpkg -i harbor-cli_<version>_linux_amd64.deb
+```
+
+### Fedora/CentOS(.rpm)
+
+```bash
+wget https://github.com/goharbor/harbor-cli/releases/download/<version>/harbor-cli_<version>_linux_amd64.rpm
+sudo rpm -i harbor-cli_<version>_linux_amd64.rpm
+```
+
+### Alpine(.apk)
+
+```bash
+wget https://github.com/goharbor/harbor-cli/releases/download/<version>/harbor-cli_<version>_linux_amd64.apk
+sudo apk add --allow-untrusted harbor-cli_<version>_linux_amd64.apk
+```
+
+### APT
+
+```bash
+echo "deb [trusted=yes] https://harborcli.goharbor.io stable main" | sudo tee /etc/apt/sources.list.d/harbor-cli.list
+sudo apt update
+sudo apt install harbor-cli
+```
 
 ## Add the Harbor CLI to your Container Image
 
@@ -270,7 +299,7 @@ Harbor <2.0.0 is not supported.
 * **User Group:** Join Harbor user email group: [harbor-users@lists.cncf.io](https://lists.cncf.io/g/harbor-users) to get update of Harbor's news, features, releases, or to provide suggestion and feedback.
 * **Developer Group:** Join Harbor developer group: [harbor-dev@lists.cncf.io](https://lists.cncf.io/g/harbor-dev) for discussion on Harbor development and contribution.
 * **Slack:** Join Harbor's community for discussion and ask questions: [Cloud Native Computing Foundation](https://slack.cncf.io/), channel: [#harbor](https://cloud-native.slack.com/messages/harbor/), [#harbor-dev](https://cloud-native.slack.com/messages/harbor-dev/) and [#harbor-cli](https://cloud-native.slack.com/archives/C078LCGU9K6).
-* **Community Calls:** Every Tuesday at 15:00 CET/CEST or 19:30 IST - [Join Meeting](https://zoom.us/j/99658352431). View [Meeting Notes](https://hackmd.io/@YvLTAInfRdO2rlxkLg9G4w/S1QeYi_uxx) for details.
+* **Community Calls:** Every Tuesday at 15:00 CET/CEST or 18:30 IST - [Join Meeting](https://zoom.us/j/99658352431). View [Meeting Notes](https://hackmd.io/@harbor/HJXzdTc3kx) for details.
 
 # License
 
