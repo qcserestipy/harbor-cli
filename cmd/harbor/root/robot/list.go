@@ -19,7 +19,6 @@ import (
 	"github.com/goharbor/harbor-cli/pkg/api"
 	"github.com/goharbor/harbor-cli/pkg/utils"
 	"github.com/goharbor/harbor-cli/pkg/views/robot/list"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -38,7 +37,7 @@ information about each robot account, such as ID, name, creation time, and
 expiration status.
 
 System-level robots have permissions that can span across multiple projects, making
-them suitable for CI/CD pipelines and automation tasks that require access to 
+them suitable for CI/CD pipelines and automation tasks that require access to
 multiple projects in Harbor.
 
 You can control the output using pagination flags and format options:
@@ -64,6 +63,10 @@ Examples:
   harbor-cli robot list --output-format json`,
 		Args: cobra.MaximumNArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if opts.Page < 1 {
+				return fmt.Errorf("page number must be greater than or equal to 1")
+			}
+
 			if opts.PageSize < 0 {
 				return fmt.Errorf("page size must be greater than or equal to 0")
 			}
@@ -85,7 +88,7 @@ Examples:
 			if formatFlag != "" {
 				err = utils.PrintFormat(robots, formatFlag)
 				if err != nil {
-					log.Errorf("Invalid Print Format: %v", err)
+					return fmt.Errorf("Invalid Print Format: %v", err)
 				}
 			} else {
 				list.ListRobots(robots.Payload)

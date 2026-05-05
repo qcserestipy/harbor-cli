@@ -38,7 +38,7 @@ func TestUserPasswordChangeCmd_Metadata(t *testing.T) {
 func TestUserPasswordChangeCmd_RunExists(t *testing.T) {
 	cmd := UserPasswordChangeCmd()
 
-	if cmd.Run == nil {
+	if cmd.RunE == nil {
 		t.Fatal("Run function should be defined")
 	}
 }

@@ -111,7 +111,7 @@ func renderSectionTable(title string, data interface{}) {
 func createRows(data interface{}, rows *[]table.Row) {
 	val := reflect.ValueOf(data)
 
-	if val.Kind() == reflect.Ptr { //nolint:govet
+	if val.Kind() == reflect.Pointer {
 		val = val.Elem()
 	}
 
@@ -127,7 +127,7 @@ func createRows(data interface{}, rows *[]table.Row) {
 		fieldType := typ.Field(i)
 		fieldName := fieldType.Name
 
-		if field.Kind() == reflect.Ptr && !field.IsNil() { //nolint:govet
+		if field.Kind() == reflect.Pointer && !field.IsNil() {
 			field = field.Elem()
 		}
 
