@@ -57,7 +57,7 @@ Examples:
 			if err != nil {
 				return fmt.Errorf("failed to delete scanner: %v", err)
 			}
-				fmt.Printf("Scanner deleted successfully\n")
+			fmt.Printf("Scanner deleted successfully\n")
 			return nil
 		},
 	}

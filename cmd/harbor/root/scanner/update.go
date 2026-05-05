@@ -116,7 +116,7 @@ Only the fields passed through flags will be updated; other fields will retain t
 				return fmt.Errorf("failed to update scanner: %v", err)
 			}
 
-				fmt.Printf("Scanner %q updated successfully\n", updateView.Name)
+			fmt.Printf("Scanner %q updated successfully\n", updateView.Name)
 			return nil
 		},
 	}
