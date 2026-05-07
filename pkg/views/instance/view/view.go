@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-package list
+package view
 
 import (
 	"fmt"
@@ -38,23 +38,21 @@ var columns = []table.Column{
 	{Title: "Setup Timestamp", Width: tablelist.WidthXL},
 }
 
-func ListInstance(instance []*models.Instance) {
+func ViewInstance(instance *models.Instance) {
 	var rows []table.Row
-	for _, regis := range instance {
-		rows = append(rows, table.Row{
-			fmt.Sprintf("%d", regis.ID),
-			regis.Name,
-			regis.Vendor,
-			regis.Endpoint,
-			regis.Status,
-			regis.AuthMode,
-			regis.Description,
-			fmt.Sprintf("%t", regis.Default),
-			fmt.Sprintf("%t", regis.Insecure),
-			fmt.Sprintf("%t", regis.Enabled),
-			time.Unix(regis.SetupTimestamp, 0).Format("2006-01-02 15:04:05"), // updated
-		})
-	}
+	rows = append(rows, table.Row{
+		fmt.Sprintf("%d", instance.ID),
+		instance.Name,
+		instance.Vendor,
+		instance.Endpoint,
+		instance.Status,
+		instance.AuthMode,
+		instance.Description,
+		fmt.Sprintf("%t", instance.Default),
+		fmt.Sprintf("%t", instance.Insecure),
+		fmt.Sprintf("%t", instance.Enabled),
+		time.Unix(instance.SetupTimestamp, 0).Format("2006-01-02 15:04:05"),
+	})
 
 	m := tablelist.NewModel(columns, rows, len(rows))
 
