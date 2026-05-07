@@ -11,43 +11,43 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-package create
+package update
 
 import (
 	"errors"
 	"strings"
 
 	"github.com/charmbracelet/huh"
+	"github.com/charmbracelet/lipgloss"
+	"github.com/goharbor/go-client/pkg/sdk/v2.0/models"
 	"github.com/goharbor/harbor-cli/pkg/utils"
 )
 
-type CreateView struct {
-	Vendor      string
-	Name        string
-	Description string
-	Endpoint    string
-	AuthMode    string
-	AuthInfo    map[string]string
-	Enabled     bool
-	Insecure    bool
-}
-
-func CreateInstanceView(createView *CreateView) error {
-	var username, password, token string
+func UpdateInstanceView(instance *models.Instance) error {
 	theme := huh.ThemeCharm()
+
+	authUsername := ""
+	authPassword := ""
+	authToken := ""
+
+	if instance.AuthInfo != nil {
+		switch strings.ToUpper(instance.AuthMode) {
+		case "BASIC":
+			authUsername = instance.AuthInfo["username"]
+			authPassword = instance.AuthInfo["password"]
+		case "OAUTH":
+			authToken = instance.AuthInfo["token"]
+		}
+	}
 
 	err := huh.NewForm(
 		huh.NewGroup(
-			huh.NewSelect[string]().
-				Title("Provider").
-				Options(
-					huh.NewOption("Dragonfly", "dragonfly"),
-					huh.NewOption("Kraken", "kraken"),
-				).
-				Value(&createView.Vendor),
+			huh.NewNote().
+				Title("Provider (cannot be changed)").
+				Description(instance.Vendor),
 			huh.NewInput().
 				Title("Name").
-				Value(&createView.Name).
+				Value(&instance.Name).
 				Validate(func(str string) error {
 					if strings.TrimSpace(str) == "" {
 						return errors.New("name cannot be empty or only spaces")
@@ -56,13 +56,12 @@ func CreateInstanceView(createView *CreateView) error {
 				}),
 			huh.NewInput().
 				Title("Description").
-				Value(&createView.Description),
+				Value(&instance.Description),
 		),
-
 		huh.NewGroup(
 			huh.NewInput().
 				Title("Endpoint").
-				Value(&createView.Endpoint).
+				Value(&instance.Endpoint).
 				Validate(func(str string) error {
 					if strings.TrimSpace(str) == "" {
 						return errors.New("endpoint cannot be empty or only spaces")
@@ -71,21 +70,22 @@ func CreateInstanceView(createView *CreateView) error {
 					if err := utils.ValidateURL(formattedURL); err != nil {
 						return err
 					}
-					createView.Endpoint = formattedURL
+					instance.Endpoint = formattedURL
 					return nil
 				}),
 			huh.NewConfirm().
 				Title("Enable").
-				Value(&createView.Enabled).
+				Value(&instance.Enabled).
 				Affirmative("yes").
-				Negative("no"),
+				Negative("no").
+				WithButtonAlignment(lipgloss.Left),
 			huh.NewConfirm().
 				Title("Skip Certificate Verification").
-				Value(&createView.Insecure).
+				Value(&instance.Insecure).
 				Affirmative("yes").
-				Negative("no"),
+				Negative("no").
+				WithButtonAlignment(lipgloss.Left),
 		),
-
 		huh.NewGroup(
 			huh.NewSelect[string]().
 				Title("Auth Mode").
@@ -94,65 +94,72 @@ func CreateInstanceView(createView *CreateView) error {
 					huh.NewOption("Basic", "BASIC"),
 					huh.NewOption("OAuth", "OAUTH"),
 				).
-				Value(&createView.AuthMode),
+				Value(&instance.AuthMode),
 		),
 		huh.NewGroup(
 			huh.NewInput().
 				Title("Username").
-				Value(&username).
+				Value(&authUsername).
 				Validate(func(str string) error {
+					if instance.AuthMode != "BASIC" {
+						return nil
+					}
 					if strings.TrimSpace(str) == "" {
 						return errors.New("username cannot be empty or only spaces")
-					}
-					if isValid := utils.ValidateUserName(str); !isValid {
-						return errors.New("please enter correct username format")
 					}
 					return nil
 				}),
 			huh.NewInput().
 				Title("Password").
 				EchoMode(huh.EchoModePassword).
-				Value(&password).
+				Value(&authPassword).
 				Validate(func(str string) error {
+					if instance.AuthMode != "BASIC" {
+						return nil
+					}
 					if strings.TrimSpace(str) == "" {
 						return errors.New("password cannot be empty or only spaces")
-					}
-					if err := utils.ValidatePassword(str); err != nil {
-						return err
 					}
 					return nil
 				}),
 		).WithHideFunc(func() bool {
-			return createView.AuthMode == "NONE" || createView.AuthMode == "OAUTH"
+			return instance.AuthMode == "NONE" || instance.AuthMode == "OAUTH"
 		}),
 		huh.NewGroup(
 			huh.NewInput().
 				Title("Token").
-				Value(&token).
+				EchoMode(huh.EchoModePassword).
+				Value(&authToken).
 				Validate(func(str string) error {
+					if instance.AuthMode != "OAUTH" {
+						return nil
+					}
 					if strings.TrimSpace(str) == "" {
 						return errors.New("token cannot be empty or only spaces")
 					}
 					return nil
 				}),
 		).WithHideFunc(func() bool {
-			return createView.AuthMode == "NONE" || createView.AuthMode == "BASIC"
+			return instance.AuthMode == "NONE" || instance.AuthMode == "BASIC"
 		}),
 	).WithTheme(theme).Run()
-
 	if err != nil {
 		return err
 	}
 
-	switch createView.AuthMode {
+	instance.AuthMode = strings.ToUpper(strings.TrimSpace(instance.AuthMode))
+
+	switch instance.AuthMode {
+	case "NONE":
+		instance.AuthInfo = nil
 	case "BASIC":
-		createView.AuthInfo = map[string]string{
-			"username": username,
-			"password": password,
+		instance.AuthInfo = map[string]string{
+			"username": strings.TrimSpace(authUsername),
+			"password": authPassword,
 		}
 	case "OAUTH":
-		createView.AuthInfo = map[string]string{
-			"token": token,
+		instance.AuthInfo = map[string]string{
+			"token": strings.TrimSpace(authToken),
 		}
 	}
 
