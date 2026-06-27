@@ -19,6 +19,8 @@ import (
 	"reflect"
 	"regexp"
 	"strings"
+
+	"github.com/go-openapi/runtime"
 )
 
 type HarborErrorPayload struct {
@@ -53,10 +55,15 @@ func ParseHarborErrorMsg(err error) string {
 	return fmt.Sprintf("%v", err.Error())
 }
 
+// ParseHarborErrorCode extracts the HTTP status code from an error string.
+// The string-parsing fallbacks below are required by the old go-swagger client which embeds
+// the status code in the error message. Once all API clients return typed error structs with
+// a Code() method (as the new generated client does), these fallbacks can be removed.
 func ParseHarborErrorCode(err error) string {
 	errStr := err.Error()
 
 	// Try format: [METHOD /path][CODE] - e.g., [GET /projects][404]
+	// TODO: can be removed once all callers use typed errors with Code()
 	parts := strings.Split(errStr, "]")
 	if len(parts) >= 2 {
 		codePart := strings.TrimSpace(parts[1])
@@ -67,10 +74,26 @@ func ParseHarborErrorCode(err error) string {
 	}
 
 	// Try format: (status CODE) - e.g., (status 404)
+	// TODO: can be removed once all callers use typed errors with Code()
 	re := regexp.MustCompile(`\(status\s+(\d{3})\)`)
 	if matches := re.FindStringSubmatch(errStr); len(matches) > 1 {
 		return matches[1]
 	}
 
 	return ""
+}
+
+func NewParseHarborErrorCode(err error) int {
+	if apiErr, ok := err.(*runtime.APIError); ok {
+		return apiErr.Code
+	}
+	// Typed error structs returned directly by ContextualTransport (not wrapped in
+	// runtime.APIError) implement Code() int
+	type errorCoder interface {
+		Code() int
+	}
+	if c, ok := err.(errorCoder); ok {
+		return c.Code()
+	}
+	return 0
 }

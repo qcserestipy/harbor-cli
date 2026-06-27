@@ -94,9 +94,8 @@ func UpdateReplicationPolicy(policyID int64, policy *models.ReplicationPolicy) (
 	}
 
 	response, err := client.Replication.UpdateReplicationPolicy(ctx, &replication.UpdateReplicationPolicyParams{
-		Context: ctx,
-		ID:      policyID,
-		Policy:  policy,
+		ID:     policyID,
+		Policy: policy,
 	})
 	if err != nil {
 		return nil, err
@@ -112,7 +111,6 @@ func StartReplication(policyID int64) (*replication.StartReplicationCreated, err
 	}
 
 	response, err := client.Replication.StartReplication(ctx, &replication.StartReplicationParams{
-		Context: ctx,
 		Execution: &models.StartReplicationExecution{
 			PolicyID: policyID,
 		},
@@ -131,8 +129,7 @@ func StopReplication(policyID int64) (*replication.StopReplicationOK, error) {
 	}
 
 	response, err := client.Replication.StopReplication(ctx, &replication.StopReplicationParams{
-		Context: ctx,
-		ID:      policyID,
+		ID: policyID,
 	})
 	if err != nil {
 		return nil, err
@@ -154,7 +151,6 @@ func ListReplicationExecutions(policyID int64, opts ...ListFlags) (*replication.
 	}
 
 	response, err := client.Replication.ListReplicationExecutions(ctx, &replication.ListReplicationExecutionsParams{
-		Context:  ctx,
 		PolicyID: &policyID,
 		Page:     &listFlags.Page,
 		PageSize: &listFlags.PageSize,
@@ -173,8 +169,7 @@ func GetReplicationExecution(executionID int64) (*replication.GetReplicationExec
 	}
 
 	response, err := client.Replication.GetReplicationExecution(ctx, &replication.GetReplicationExecutionParams{
-		Context: ctx,
-		ID:      executionID,
+		ID: executionID,
 	})
 	if err != nil {
 		return nil, err
@@ -190,9 +185,8 @@ func GetReplicationLog(executionID int64, taskID int64) (*replication.GetReplica
 	}
 
 	response, err := client.Replication.GetReplicationLog(ctx, &replication.GetReplicationLogParams{
-		Context: ctx,
-		ID:      executionID,
-		TaskID:  taskID,
+		ID:     executionID,
+		TaskID: taskID,
 	})
 	if err != nil {
 		return nil, err
@@ -214,7 +208,6 @@ func ListReplicationTasks(executionID int64, opts ...ListFlags) (*replication.Li
 	}
 
 	response, err := client.Replication.ListReplicationTasks(ctx, &replication.ListReplicationTasksParams{
-		Context:  ctx,
 		ID:       executionID,
 		Page:     &listFlags.Page,
 		PageSize: &listFlags.PageSize,

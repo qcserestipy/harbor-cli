@@ -205,7 +205,6 @@ func LogsProject(projectName string, opts ...ListFlags) (*project.GetLogExtsOK, 
 		PageSize:    &listFlags.PageSize,
 		Q:           &listFlags.Q,
 		Sort:        &listFlags.Sort,
-		Context:     ctx,
 	})
 	if err != nil {
 		return nil, err

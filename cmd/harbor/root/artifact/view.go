@@ -60,7 +60,7 @@ func ViewArtifactCommmand() *cobra.Command {
 			artifact, err = api.ViewArtifact(projectName, repoName, reference, false)
 
 			if err != nil {
-				return fmt.Errorf("failed to get info of an artifact: %v", err)
+				return fmt.Errorf("failed to get info of an artifact: %v", utils.ParseHarborErrorMsg(err))
 			}
 
 			FormatFlag := viper.GetString("output-format")

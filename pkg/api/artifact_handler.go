@@ -187,7 +187,7 @@ func CreateTag(projectName, repoName, reference, tagName string) error {
 		ProjectName:    projectName,
 		RepositoryName: repoName,
 		Reference:      reference,
-		Tag: &models.Tag{
+		Tag: &models.NewTag{
 			Name: tagName,
 		},
 	})

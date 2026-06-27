@@ -129,9 +129,10 @@ func GetAllQuotas(listFunc func(ListQuotaFlags) (*quota.ListQuotasOK, error), op
 
 // helper Function to get project ref details
 func getRefProjectID(ref models.QuotaRefObject) (string, error) {
-	if refMap, ok := ref.(map[string]interface{}); ok {
-		id, _ := refMap["id"]
-		return fmt.Sprintf("%v", id), nil
+	id, ok := ref["id"]
+	if !ok || id == nil {
+		return "", fmt.Errorf("ref does not contain a valid id")
 	}
-	return "", fmt.Errorf("Error: Ref is not of expected type")
+
+	return fmt.Sprintf("%v", id), nil
 }

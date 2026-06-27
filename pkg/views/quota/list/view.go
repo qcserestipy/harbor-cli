@@ -35,12 +35,17 @@ var columns = []table.Column{
 
 // Function to get project ref details
 func getRefDetails(ref models.QuotaRefObject) (string, string, error) {
-	if refMap, ok := ref.(map[string]interface{}); ok {
-		projectName, _ := refMap["name"].(string)
-		ownerName, _ := refMap["owner_name"].(string)
-		return projectName, ownerName, nil
+	projectName, ok := ref["name"].(string)
+	if !ok || projectName == "" {
+		return "", "", fmt.Errorf("ref does not contain a valid name")
 	}
-	return "", "", fmt.Errorf("Error: Ref is not of expected type")
+
+	ownerName, ok := ref["owner_name"].(string)
+	if !ok {
+		return "", "", fmt.Errorf("ref does not contain a valid owner_name")
+	}
+
+	return projectName, ownerName, nil
 }
 
 // Function to convert bytes to human-readable storage format

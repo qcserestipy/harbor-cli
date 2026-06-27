@@ -217,9 +217,9 @@ func validateClientConnection(client *client.HarborAPI) error {
 		return nil
 	}
 
-	errorCode := utils.ParseHarborErrorCode(err)
+	errorCode := utils.NewParseHarborErrorCode(err)
 	// 401/403 = definite auth failure
-	if errorCode == "401" || errorCode == "403" {
+	if errorCode == 401 || errorCode == 403 {
 		return fmt.Errorf("authentication failed, check your credentials: %v", utils.ParseHarborErrorMsg(err))
 	}
 
@@ -233,8 +233,8 @@ func validateClientConnection(client *client.HarborAPI) error {
 
 	// If either secondary check returns 401/403, creds are bad.
 	if projectErr != nil {
-		projCode := utils.ParseHarborErrorCode(projectErr)
-		if projCode == "401" || projCode == "403" {
+		projCode := utils.NewParseHarborErrorCode(projectErr)
+		if projCode == 401 || projCode == 403 {
 			return fmt.Errorf("authentication failed, check your credentials: %v", utils.ParseHarborErrorMsg(projectErr))
 		}
 	}

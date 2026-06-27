@@ -25,11 +25,12 @@ import (
 
 // Function to get project ref details
 func getRefProjectName(ref models.QuotaRefObject) (string, error) {
-	if refMap, ok := ref.(map[string]interface{}); ok {
-		projectName, _ := refMap["name"].(string)
-		return projectName, nil
+	projectName, ok := ref["name"].(string)
+	if !ok || projectName == "" {
+		return "", fmt.Errorf("ref does not contain a valid name")
 	}
-	return "", fmt.Errorf("Error: Ref is not of expected type")
+
+	return projectName, nil
 }
 
 func QuotaList(quotas []*models.Quota, choice chan<- int64) {
