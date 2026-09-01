@@ -30,7 +30,10 @@ type RegistryOption struct {
 }
 
 func CreateRegistryView(createView *api.CreateRegView) error {
-	registries, _ := api.GetRegistryProviders()
+	registries, err := api.GetRegistryProviders()
+	if err != nil {
+		return err
+	}
 
 	// Initialize a slice to hold registry options
 	var registryOptions []RegistryOption
@@ -55,7 +58,7 @@ func CreateRegistryView(createView *api.CreateRegView) error {
 	}
 
 	theme := huh.ThemeCharm()
-	err := huh.NewForm(
+	err = huh.NewForm(
 		huh.NewGroup(
 			huh.NewSelect[string]().
 				Title("Select a Registry Provider").

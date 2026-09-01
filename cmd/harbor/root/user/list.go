@@ -15,7 +15,6 @@ package user
 
 import (
 	"fmt"
-	"log/slog"
 
 	"github.com/goharbor/go-client/pkg/sdk/v2.0/models"
 	"github.com/goharbor/harbor-cli/pkg/api"
@@ -77,7 +76,7 @@ func UserListCmd() *cobra.Command {
 			if formatFlag != "" {
 				err := utils.PrintFormat(allUsers, formatFlag)
 				if err != nil {
-					slog.Error(err.Error())
+					return err
 				}
 			} else {
 				list.ListUsers(allUsers)

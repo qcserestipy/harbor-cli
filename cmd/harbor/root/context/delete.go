@@ -111,7 +111,7 @@ If you specify --name, that credential (rather than the "current" one) will be u
 
 			// 5. Confirm to the user (no error here)
 			canonicalPath := strings.Join(actualSegments, ".")
-			slog.Info(fmt.Sprintf("Successfully cleared %s", canonicalPath))
+			fmt.Printf("Successfully cleared %s\n", canonicalPath)
 
 			return nil
 		},

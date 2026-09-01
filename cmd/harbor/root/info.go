@@ -15,7 +15,6 @@ package root
 
 import (
 	"fmt"
-	"log/slog"
 
 	"github.com/goharbor/harbor-cli/cmd/harbor/internal/version"
 	"github.com/goharbor/harbor-cli/pkg/api"
@@ -75,7 +74,7 @@ The output can be formatted as table (default), JSON, or YAML using the '--outpu
 			if FormatFlag != "" {
 				err = utils.PrintFormat(systemInfo, FormatFlag)
 				if err != nil {
-					slog.Error(err.Error())
+					return err
 				}
 			} else {
 				list.ListInfo(&systemInfo)

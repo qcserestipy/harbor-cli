@@ -16,7 +16,6 @@ package prompt
 import (
 	"errors"
 	"fmt"
-	"log/slog"
 	"strconv"
 
 	"github.com/goharbor/harbor-cli/pkg/utils"
@@ -305,18 +304,18 @@ func GetInstanceNameFromUser() (string, error) {
 	return res.name, res.err
 }
 
-func GetQuotaIDFromUser() int64 {
-	QuotaID := make(chan int64)
+func GetQuotaIDFromUser() (int64, error) {
+	response, err := api.ListQuota(api.ListQuotaFlags{})
+	if err != nil {
+		return 0, fmt.Errorf("failed to list quota: %v", err)
+	}
 
+	QuotaID := make(chan int64)
 	go func() {
-		response, err := api.ListQuota(*&api.ListQuotaFlags{})
-		if err != nil {
-			slog.Error("failed to list quota", "error", err)
-		}
 		qview.QuotaList(response.Payload, QuotaID)
 	}()
 
-	return <-QuotaID
+	return <-QuotaID, nil
 }
 
 func GetActiveContextFromUser() (string, error) {

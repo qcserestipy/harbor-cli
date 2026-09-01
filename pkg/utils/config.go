@@ -66,6 +66,7 @@ var ConfigInitialization = &Once{}
 
 func InitConfig(cfgFile string, userSpecifiedConfig bool) error {
 	ConfigInitialization.Do(func() {
+		configInitError = nil
 		harborDataPath, harborDataDir, err := GetDataPaths()
 		if err != nil {
 			configInitError = err

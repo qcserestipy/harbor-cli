@@ -135,7 +135,11 @@ func GetQuotaFromUser(args []string, opts api.ListQuotaFlags) (*models.Quota, er
 			return nil, err
 		}
 	} else {
-		quotaID := prompt.GetQuotaIDFromUser()
+		var quotaID int64
+		quotaID, err = prompt.GetQuotaIDFromUser()
+		if err != nil {
+			return nil, err
+		}
 		if quotaID == 0 {
 			err := fmt.Errorf("failed to get quotaID from user")
 			return nil, err

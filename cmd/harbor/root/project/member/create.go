@@ -16,7 +16,6 @@ package member
 
 import (
 	"fmt"
-	"log/slog"
 
 	"github.com/goharbor/go-client/pkg/sdk/v2.0/models"
 
@@ -89,7 +88,7 @@ func CreateMemberCommand() *cobra.Command {
 			}
 
 			if err != nil {
-				slog.Error("failed to create user", "error", err)
+				return fmt.Errorf("failed to create user: %v", err)
 			}
 
 			fmt.Printf("successfully added user %s to project %s\n", createView.MemberUser.Username, opts.ProjectName)

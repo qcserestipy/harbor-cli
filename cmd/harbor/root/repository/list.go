@@ -15,7 +15,6 @@ package repository
 
 import (
 	"fmt"
-	"log/slog"
 
 	"github.com/goharbor/go-client/pkg/sdk/v2.0/client/repository"
 	"github.com/goharbor/harbor-cli/pkg/api"
@@ -72,7 +71,7 @@ func ListRepositoryCommand() *cobra.Command {
 			if FormatFlag != "" {
 				err = utils.PrintFormat(repos, FormatFlag)
 				if err != nil {
-					slog.Error(err.Error())
+					return err
 				}
 			} else {
 				list.ListRepositories(repos.Payload)

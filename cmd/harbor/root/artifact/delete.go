@@ -15,7 +15,6 @@ package artifact
 
 import (
 	"fmt"
-	"log/slog"
 
 	"github.com/goharbor/harbor-cli/pkg/api"
 	"github.com/goharbor/harbor-cli/pkg/prompt"
@@ -39,7 +38,7 @@ func DeleteArtifactCommand() *cobra.Command {
 			} else {
 				projectName, err = prompt.GetProjectNameFromUser()
 				if err != nil {
-					slog.Error(fmt.Sprintf("failed to get project name: %v", utils.ParseHarborErrorMsg(err)))
+					return fmt.Errorf("failed to get project name: %v", utils.ParseHarborErrorMsg(err))
 				}
 				repoName, err = prompt.GetRepoNameFromUser(projectName)
 				if err != nil {

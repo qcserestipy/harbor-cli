@@ -15,7 +15,6 @@ package labels
 
 import (
 	"fmt"
-	"log/slog"
 
 	"github.com/goharbor/harbor-cli/pkg/api"
 	"github.com/goharbor/harbor-cli/pkg/utils"
@@ -87,7 +86,7 @@ func ListLabelCommand() *cobra.Command {
 			if formatFlag != "" {
 				err = utils.PrintFormat(label, formatFlag)
 				if err != nil {
-					slog.Error(err.Error())
+					return err
 				}
 			} else {
 				list.ListLabels(label.Payload)
