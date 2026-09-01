@@ -114,6 +114,8 @@ func (h *PrettyHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	copy(newPreAttrs[len(h.preAttrs):], attrs)
 
 	return &PrettyHandler{
+		out:      h.out,
+		level:    h.level,
 		preAttrs: newPreAttrs,
 		groups:   h.groups,
 	}
@@ -128,6 +130,8 @@ func (h *PrettyHandler) WithGroup(name string) slog.Handler {
 	newGroups[len(h.groups)] = name
 
 	return &PrettyHandler{
+		out:      h.out,
+		level:    h.level,
 		preAttrs: h.preAttrs,
 		groups:   newGroups,
 	}

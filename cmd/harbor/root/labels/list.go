@@ -15,11 +15,12 @@ package labels
 
 import (
 	"fmt"
+	"log/slog"
+	"os"
 
 	"github.com/goharbor/harbor-cli/pkg/api"
 	"github.com/goharbor/harbor-cli/pkg/utils"
 	"github.com/goharbor/harbor-cli/pkg/views/label/list"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -80,14 +81,15 @@ func ListLabelCommand() *cobra.Command {
 
 			label, err := api.ListLabel(opts)
 			if err != nil {
-				log.Fatalf("failed to get label list: %v", err)
+				slog.Error("failed to get label list", "error", err)
+				os.Exit(1)
 			}
 
 			formatFlag := viper.GetString("output-format")
 			if formatFlag != "" {
 				err = utils.PrintFormat(label, formatFlag)
 				if err != nil {
-					log.Error(err)
+					slog.Error(err.Error())
 				}
 			} else {
 				list.ListLabels(label.Payload)

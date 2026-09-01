@@ -16,11 +16,12 @@ package update
 import (
 	"errors"
 	"fmt"
+	"log/slog"
+	"os"
 	"regexp"
 	"strings"
 
 	"github.com/charmbracelet/huh"
-	log "github.com/sirupsen/logrus"
 )
 
 func UpdateSchedule(cron *string) {
@@ -37,7 +38,8 @@ func UpdateSchedule(cron *string) {
 	).WithTheme(theme).Run()
 
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(err.Error())
+		os.Exit(1)
 	}
 }
 

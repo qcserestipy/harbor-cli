@@ -15,12 +15,12 @@ package root
 
 import (
 	"fmt"
+	"log/slog"
 
 	"github.com/goharbor/harbor-cli/cmd/harbor/internal/version"
 	"github.com/goharbor/harbor-cli/pkg/api"
 	"github.com/goharbor/harbor-cli/pkg/utils"
 	"github.com/goharbor/harbor-cli/pkg/views/info/list"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -75,7 +75,7 @@ The output can be formatted as table (default), JSON, or YAML using the '--outpu
 			if FormatFlag != "" {
 				err = utils.PrintFormat(systemInfo, FormatFlag)
 				if err != nil {
-					log.Error(err)
+					slog.Error(err.Error())
 				}
 			} else {
 				list.ListInfo(&systemInfo)

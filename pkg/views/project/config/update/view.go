@@ -14,9 +14,11 @@
 package update
 
 import (
+	"log/slog"
+	"os"
+
 	"github.com/charmbracelet/huh"
 	"github.com/goharbor/go-client/pkg/sdk/v2.0/models"
-	log "github.com/sirupsen/logrus"
 )
 
 func validateValue(value *string) *string {
@@ -74,6 +76,7 @@ func UpdateProjectMetadataView(config *models.ProjectMetadata) {
 	).WithTheme(theme).Run()
 
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(err.Error())
+		os.Exit(1)
 	}
 }

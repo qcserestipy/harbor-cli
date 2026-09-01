@@ -14,8 +14,10 @@
 package views
 
 import (
+	"log/slog"
+	"os"
+
 	"github.com/charmbracelet/huh"
-	log "github.com/sirupsen/logrus"
 )
 
 func ConfirmElevation() (bool, error) {
@@ -27,7 +29,8 @@ func ConfirmElevation() (bool, error) {
 		Negative("No").
 		Value(&confirm).Run()
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(err.Error())
+		os.Exit(1)
 	}
 
 	return confirm, nil

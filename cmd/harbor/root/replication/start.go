@@ -15,12 +15,12 @@ package replication
 
 import (
 	"fmt"
+	"log/slog"
 	"strconv"
 
 	"github.com/goharbor/harbor-cli/pkg/api"
 	"github.com/goharbor/harbor-cli/pkg/prompt"
 	"github.com/goharbor/harbor-cli/pkg/utils"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -30,7 +30,7 @@ func StartCommand() *cobra.Command {
 		Short: "start replication",
 		Args:  cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			log.Debug("Starting replication")
+			slog.Debug("Starting replication")
 
 			var rpolicyID int64
 			if len(args) > 0 {

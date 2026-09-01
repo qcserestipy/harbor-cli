@@ -16,6 +16,8 @@ package update
 import (
 	"errors"
 	"fmt"
+	"log/slog"
+	"os"
 	"slices"
 	"strconv"
 	"strings"
@@ -23,7 +25,6 @@ import (
 	"github.com/charmbracelet/huh"
 	"github.com/goharbor/go-client/pkg/sdk/v2.0/models"
 	"github.com/goharbor/harbor-cli/pkg/views/quota/list"
-	log "github.com/sirupsen/logrus"
 )
 
 type CreateView struct {
@@ -91,7 +92,8 @@ func UpdateQuotaView(quta *models.Quota) string {
 		),
 	).WithTheme(theme).Run()
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(err.Error())
+		os.Exit(1)
 	}
 
 	return fmt.Sprintf("%v%v", createView.Value, createView.StorageUnit)

@@ -15,10 +15,11 @@ package update
 
 import (
 	"errors"
+	"log/slog"
+	"os"
 
 	"github.com/charmbracelet/huh"
 	"github.com/goharbor/go-client/pkg/sdk/v2.0/models"
-	log "github.com/sirupsen/logrus"
 )
 
 func UpdateLabelView(updateView *models.Label) {
@@ -84,6 +85,7 @@ func UpdateLabelView(updateView *models.Label) {
 	).WithTheme(theme).Run()
 
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(err.Error())
+		os.Exit(1)
 	}
 }

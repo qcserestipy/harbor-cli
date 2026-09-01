@@ -15,6 +15,8 @@ package robot
 
 import (
 	"fmt"
+	"log/slog"
+	"os"
 	"strconv"
 
 	"github.com/atotto/clipboard"
@@ -22,7 +24,6 @@ import (
 	"github.com/goharbor/harbor-cli/pkg/prompt"
 	"github.com/goharbor/harbor-cli/pkg/utils"
 	"github.com/goharbor/harbor-cli/pkg/views/robot/create"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/spf13/cobra"
 )
@@ -87,7 +88,8 @@ Examples:
 				}
 				robotID, err = prompt.GetRobotIDFromUser(projectID)
 				if err != nil {
-					log.Fatalf("failed to get robot ID from user: %v", utils.ParseHarborErrorMsg(err))
+					slog.Error(fmt.Sprintf("failed to get robot ID from user: %v", utils.ParseHarborErrorMsg(err)))
+					os.Exit(1)
 				}
 			}
 
@@ -133,11 +135,13 @@ Examples:
 func getSecret() string {
 	secret, err := utils.GetSecretStdin("Enter your secret: ")
 	if err != nil {
-		log.Fatalf("Error reading secret: %v\n", err)
+		slog.Error("Error reading secret", "error", err)
+		os.Exit(1)
 	}
 
 	if err := utils.ValidatePassword(secret); err != nil {
-		log.Fatalf("Invalid secret: %v\n", err)
+		slog.Error("Invalid secret", "error", err)
+		os.Exit(1)
 	}
 	return secret
 }

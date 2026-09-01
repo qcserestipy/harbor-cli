@@ -15,11 +15,12 @@ package edit
 
 import (
 	"errors"
+	"log/slog"
+	"os"
 	"strings"
 
 	"github.com/charmbracelet/huh"
 	"github.com/goharbor/harbor-cli/pkg/utils"
-	log "github.com/sirupsen/logrus"
 )
 
 type EditView struct {
@@ -79,7 +80,8 @@ func WebhookEditView(editView *EditView) {
 	).WithTheme(theme).Run()
 
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(err.Error())
+		os.Exit(1)
 	}
 
 	if editView.NotifyType == "http" {
@@ -96,7 +98,8 @@ func WebhookEditView(editView *EditView) {
 		).WithTheme(theme).Run()
 
 		if err != nil {
-			log.Fatal(err)
+			slog.Error(err.Error())
+			os.Exit(1)
 		}
 	}
 
@@ -170,6 +173,7 @@ func WebhookEditView(editView *EditView) {
 	}
 
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(err.Error())
+		os.Exit(1)
 	}
 }

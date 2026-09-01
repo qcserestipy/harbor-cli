@@ -15,11 +15,12 @@ package create
 
 import (
 	"errors"
+	"log/slog"
+	"os"
 	"strings"
 
 	"github.com/charmbracelet/huh"
 	"github.com/goharbor/harbor-cli/pkg/utils"
-	log "github.com/sirupsen/logrus"
 )
 
 type CreateView struct {
@@ -57,7 +58,8 @@ func CreateScannerView(createView *CreateView) {
 	).WithTheme(theme).Run()
 
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(err.Error())
+		os.Exit(1)
 	}
 
 	if createView.Auth == "Basic" {
@@ -86,7 +88,8 @@ func CreateScannerView(createView *CreateView) {
 			),
 		).WithTheme(theme).Run()
 		if err != nil {
-			log.Fatal(err)
+			slog.Error(err.Error())
+			os.Exit(1)
 		}
 		createView.AccessCredential = username + ":" + password
 	} else if createView.Auth == "Bearer" || createView.Auth == "X-ScannerAdapter-API-Key" {
@@ -99,7 +102,8 @@ func CreateScannerView(createView *CreateView) {
 			),
 		).WithTheme(theme).Run()
 		if err != nil {
-			log.Fatal(err)
+			slog.Error(err.Error())
+			os.Exit(1)
 		}
 		if createView.Auth == "Bearer" {
 			createView.AccessCredential = "Bearer: " + createView.AccessCredential
@@ -148,7 +152,8 @@ func CreateScannerView(createView *CreateView) {
 		),
 	).WithTheme(theme).Run()
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(err.Error())
+		os.Exit(1)
 	}
 	createView.URL = utils.FormatUrl(createView.URL)
 }

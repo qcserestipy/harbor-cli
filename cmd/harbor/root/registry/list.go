@@ -15,11 +15,11 @@ package registry
 
 import (
 	"fmt"
+	"log/slog"
 
 	"github.com/goharbor/harbor-cli/pkg/api"
 	"github.com/goharbor/harbor-cli/pkg/utils"
 	"github.com/goharbor/harbor-cli/pkg/views/registry/list"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -49,7 +49,7 @@ func ListRegistryCommand() *cobra.Command {
 			if formatFlag != "" {
 				err = utils.PrintFormat(registry, formatFlag)
 				if err != nil {
-					log.Error(err)
+					slog.Error(err.Error())
 				}
 			} else {
 				list.ListRegistry(registry.Payload)

@@ -15,6 +15,7 @@ package policies
 
 import (
 	"fmt"
+	"log/slog"
 	"strconv"
 	"strings"
 
@@ -22,7 +23,6 @@ import (
 	"github.com/goharbor/harbor-cli/pkg/api"
 	"github.com/goharbor/harbor-cli/pkg/prompt"
 	"github.com/goharbor/harbor-cli/pkg/views/replication/policies/create"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -189,7 +189,7 @@ explicitly provided flags (partial update).`,
 				}
 			}
 
-			log.Debugf("Updating replication policy: %s (ID: %d)", existingPolicy.Payload.Name, policyID)
+			slog.Debug(fmt.Sprintf("Updating replication policy: %s (ID: %d)", existingPolicy.Payload.Name, policyID))
 
 			// Branch: non-interactive if any update flag was explicitly provided.
 			if isNonInteractiveMode {

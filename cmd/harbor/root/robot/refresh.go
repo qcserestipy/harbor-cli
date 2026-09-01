@@ -15,6 +15,8 @@ package robot
 
 import (
 	"fmt"
+	"log/slog"
+	"os"
 	"strconv"
 
 	"github.com/atotto/clipboard"
@@ -22,7 +24,6 @@ import (
 	"github.com/goharbor/harbor-cli/pkg/prompt"
 	"github.com/goharbor/harbor-cli/pkg/utils"
 	"github.com/goharbor/harbor-cli/pkg/views/robot/create"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/spf13/cobra"
 )
@@ -83,7 +84,8 @@ Examples:
 			} else {
 				robotID, err = prompt.GetRobotIDFromUser(-1)
 				if err != nil {
-					log.Fatalf("failed to get robot ID from user: %v", utils.ParseHarborErrorMsg(err))
+					slog.Error(fmt.Sprintf("failed to get robot ID from user: %v", utils.ParseHarborErrorMsg(err)))
+					os.Exit(1)
 				}
 			}
 
@@ -101,9 +103,11 @@ Examples:
 			if err != nil {
 				errorCode := utils.ParseHarborErrorCode(err)
 				if errorCode == "403" {
-					log.Fatalf("Permission denied: (Project) Admin privileges are required to execute this command.\n")
+					slog.Error("Permission denied: (Project) Admin privileges are required to execute this command.\n")
+					os.Exit(1)
 				} else {
-					log.Fatalf("failed to refresh robot secret: %v\n", utils.ParseHarborErrorMsg(err))
+					slog.Error(fmt.Sprintf("failed to refresh robot secret: %v\n", utils.ParseHarborErrorMsg(err)))
+					os.Exit(1)
 				}
 			}
 
@@ -134,11 +138,13 @@ Examples:
 func getSecret() string {
 	secret, err := utils.GetSecretStdin("Enter your secret: ")
 	if err != nil {
-		log.Fatalf("Error reading secret: %v\n", err)
+		slog.Error(fmt.Sprintf("Error reading secret: %v\n", err))
+		os.Exit(1)
 	}
 
 	if err := utils.ValidatePassword(secret); err != nil {
-		log.Fatalf("Invalid secret: %v\n", err)
+		slog.Error(fmt.Sprintf("Invalid secret: %v\n", err))
+		os.Exit(1)
 	}
 	return secret
 }

@@ -16,12 +16,13 @@ package create
 import (
 	"errors"
 	"fmt"
+	"log/slog"
+	"os"
 	"strings"
 
 	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/goharbor/go-client/pkg/sdk/v2.0/models"
-	log "github.com/sirupsen/logrus"
 )
 
 type CreateView struct {
@@ -51,7 +52,8 @@ func CreatePreheatPolicyView(createView *CreateView, providers []*models.Provide
 	theme := huh.ThemeCharm()
 
 	if len(providers) == 0 {
-		log.Fatal("No P2P provider instances available for this project. Please create a provider instance first.")
+		slog.Error("No P2P provider instances available for this project. Please create a provider instance first.")
+		os.Exit(1)
 	}
 
 	providerOptions := make([]huh.Option[string], 0, len(providers))
@@ -64,7 +66,8 @@ func CreatePreheatPolicyView(createView *CreateView, providers []*models.Provide
 	}
 
 	if len(providerOptions) == 0 {
-		log.Fatal("No enabled P2P provider instances available for this project.")
+		slog.Error("No enabled P2P provider instances available for this project.")
+		os.Exit(1)
 	}
 
 	basicGroup := huh.NewGroup(
@@ -92,7 +95,8 @@ func CreatePreheatPolicyView(createView *CreateView, providers []*models.Provide
 
 	basicForm := huh.NewForm(basicGroup).WithTheme(theme)
 	if err := basicForm.Run(); err != nil {
-		log.Fatal(err)
+		slog.Error(err.Error())
+		os.Exit(1)
 	}
 
 	filterGroup := huh.NewGroup(
@@ -135,7 +139,8 @@ func CreatePreheatPolicyView(createView *CreateView, providers []*models.Provide
 
 	restForm := huh.NewForm(filterGroup, triggerGroup).WithTheme(theme)
 	if err := restForm.Run(); err != nil {
-		log.Fatal(err)
+		slog.Error(err.Error())
+		os.Exit(1)
 	}
 
 	if createView.TriggerType == "scheduled" {
@@ -157,7 +162,8 @@ func CreatePreheatPolicyView(createView *CreateView, providers []*models.Provide
 		).WithTheme(theme)
 
 		if err := presetForm.Run(); err != nil {
-			log.Fatal(err)
+			slog.Error(err.Error())
+			os.Exit(1)
 		}
 
 		if schedulePreset == "custom" {
@@ -184,7 +190,8 @@ func CreatePreheatPolicyView(createView *CreateView, providers []*models.Provide
 			).WithTheme(theme)
 
 			if err := cronForm.Run(); err != nil {
-				log.Fatal(err)
+				slog.Error(err.Error())
+				os.Exit(1)
 			}
 			createView.CronString = ResolveSchedulePreset(schedulePreset, createView.CronString)
 		} else {

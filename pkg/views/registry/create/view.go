@@ -15,13 +15,14 @@ package create
 
 import (
 	"errors"
+	"log/slog"
+	"os"
 	"strconv"
 	"strings"
 
 	"github.com/charmbracelet/huh"
 	"github.com/goharbor/harbor-cli/pkg/api"
 	"github.com/goharbor/harbor-cli/pkg/utils"
-	log "github.com/sirupsen/logrus"
 )
 
 // struct to hold registry options
@@ -113,6 +114,7 @@ func CreateRegistryView(createView *api.CreateRegView) {
 		),
 	).WithTheme(theme).Run()
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(err.Error())
+		os.Exit(1)
 	}
 }

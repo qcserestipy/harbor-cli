@@ -16,13 +16,13 @@ package main
 import (
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
 
 	cmd "github.com/goharbor/harbor-cli/cmd/harbor/root"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra/doc"
 )
 
@@ -36,7 +36,8 @@ func ManDoc() error {
 	if os.IsNotExist(err) {
 		err = os.Mkdir(folderName, 0755)
 		if err != nil {
-			log.Fatal("Error creating folder:", err)
+			slog.Error(fmt.Sprint("Error creating folder:", err))
+			os.Exit(1)
 		}
 	}
 	docDir := fmt.Sprintf("%s/%s", currentDir, folderName)
@@ -56,7 +57,8 @@ func ManDoc() error {
 
 	err = cleanManPages(docDir)
 	if err != nil {
-		log.Fatalf("Error cleaning up documentation: %v", err)
+		slog.Error("Error cleaning up documentation", "error", err)
+		os.Exit(1)
 	}
 
 	fmt.Println("Documentation generated successfully in", docDir)
@@ -125,6 +127,7 @@ func cleanManPages(docDir string) error {
 func main() {
 	err := ManDoc()
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(err.Error())
+		os.Exit(1)
 	}
 }

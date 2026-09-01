@@ -16,6 +16,7 @@ package robot
 import (
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"os"
 
 	"github.com/atotto/clipboard"
@@ -25,7 +26,6 @@ import (
 	"github.com/goharbor/harbor-cli/pkg/prompt"
 	"github.com/goharbor/harbor-cli/pkg/utils"
 	"github.com/goharbor/harbor-cli/pkg/views/robot/create"
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -102,7 +102,7 @@ Examples:
 				if loadErr != nil {
 					return fmt.Errorf("failed to load robot config from file: %v", loadErr)
 				}
-				logrus.Debug("Successfully loaded robot configuration")
+				slog.Debug("Successfully loaded robot configuration")
 				opts = *loadedOpts
 				if opts.ProjectName == "" {
 					opts.ProjectName = opts.Permissions[0].Namespace
@@ -219,7 +219,7 @@ Examples:
 				create.CreateRobotSecretView(name, secret)
 				err = clipboard.WriteAll(response.Payload.Secret)
 				if err != nil {
-					logrus.Errorf("failed to write to clipboard")
+					slog.Error("failed to write to clipboard")
 					return nil
 				}
 				fmt.Println("secret copied to clipboard.")
@@ -249,10 +249,10 @@ func exportSecretToFile(name, secret, creationTime string, expiresAt int64) {
 	filename := fmt.Sprintf("%s-secret.json", name)
 	jsonData, err := json.MarshalIndent(secretJson, "", "  ")
 	if err != nil {
-		logrus.Errorf("Failed to marshal secret to JSON: %v", err)
+		slog.Error("Failed to marshal secret to JSON", "error", err)
 	} else {
 		if err := os.WriteFile(filename, jsonData, 0600); err != nil {
-			logrus.Errorf("Failed to write secret to file: %v", err)
+			slog.Error("Failed to write secret to file", "error", err)
 		} else {
 			fmt.Printf("Secret saved to %s\n", filename)
 		}

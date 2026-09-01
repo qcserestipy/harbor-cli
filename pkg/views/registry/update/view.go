@@ -15,12 +15,13 @@ package update
 
 import (
 	"errors"
+	"log/slog"
+	"os"
 	"strings"
 
 	"github.com/charmbracelet/huh"
 	"github.com/goharbor/go-client/pkg/sdk/v2.0/models"
 	"github.com/goharbor/harbor-cli/pkg/utils"
-	log "github.com/sirupsen/logrus"
 )
 
 func UpdateRegistryView(updateView *models.Registry) {
@@ -79,6 +80,7 @@ func UpdateRegistryView(updateView *models.Registry) {
 	).WithTheme(theme).Run()
 
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(err.Error())
+		os.Exit(1)
 	}
 }

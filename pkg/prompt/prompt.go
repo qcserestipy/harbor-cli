@@ -16,6 +16,8 @@ package prompt
 import (
 	"errors"
 	"fmt"
+	"log/slog"
+	"os"
 	"strconv"
 
 	"github.com/goharbor/harbor-cli/pkg/utils"
@@ -46,7 +48,6 @@ import (
 	sview "github.com/goharbor/harbor-cli/pkg/views/scanner/select"
 	uview "github.com/goharbor/harbor-cli/pkg/views/user/select"
 	wview "github.com/goharbor/harbor-cli/pkg/views/webhook/select"
-	log "github.com/sirupsen/logrus"
 )
 
 func GetRegistryNameFromUser() int64 {
@@ -149,7 +150,8 @@ func GetRepoNameFromUser(projectName string) string {
 	go func() {
 		response, err := api.ListRepository(projectName, false)
 		if err != nil {
-			log.Fatal(err)
+			slog.Error(err.Error())
+			os.Exit(1)
 		}
 		repoView.RepositoryList(response.Payload, repositoryName)
 	}()
@@ -311,7 +313,7 @@ func GetQuotaIDFromUser() int64 {
 	go func() {
 		response, err := api.ListQuota(*&api.ListQuotaFlags{})
 		if err != nil {
-			log.Errorf("failed to list quota: %v", err)
+			slog.Error("failed to list quota", "error", err)
 		}
 		qview.QuotaList(response.Payload, QuotaID)
 	}()
@@ -390,7 +392,8 @@ func GetReplicationPolicyFromUser() int64 {
 	go func() {
 		response, err := api.ListReplicationPolicies()
 		if err != nil {
-			log.Fatal(err)
+			slog.Error(err.Error())
+			os.Exit(1)
 		}
 		rpolicies.ReplicationPoliciesList(response.Payload, replicationPolicyID)
 	}()
@@ -404,10 +407,12 @@ func GetReplicationExecutionIDFromUser(rpolicyID int64) int64 {
 	go func() {
 		response, err := api.ListReplicationExecutions(rpolicyID)
 		if err != nil {
-			log.Fatal(err)
+			slog.Error(err.Error())
+			os.Exit(1)
 		}
 		if len(response.Payload) == 0 {
-			log.Fatal("no replication executions found")
+			slog.Error("no replication executions found")
+			os.Exit(1)
 		}
 		rexecutions.ReplicationExecutionList(response.Payload, executionID)
 	}()
@@ -421,10 +426,12 @@ func GetReplicationTaskIDFromUser(execID int64) int64 {
 	go func() {
 		response, err := api.ListReplicationTasks(execID)
 		if err != nil {
-			log.Fatal(err)
+			slog.Error(err.Error())
+			os.Exit(1)
 		}
 		if len(response.Payload) == 0 {
-			log.Fatal("no replication tasks found")
+			slog.Error("no replication tasks found")
+			os.Exit(1)
 		}
 		rtasks.ReplicationTasksList(response.Payload, executionID)
 	}()

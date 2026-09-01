@@ -15,9 +15,10 @@ package create
 
 import (
 	"errors"
+	"log/slog"
+	"os"
 
 	"github.com/charmbracelet/huh"
-	log "github.com/sirupsen/logrus"
 )
 
 type CreateView struct {
@@ -82,6 +83,7 @@ func CreateImmutableView(createView *CreateView) {
 	).WithTheme(theme).Run()
 
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(err.Error())
+		os.Exit(1)
 	}
 }

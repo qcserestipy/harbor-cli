@@ -15,6 +15,8 @@ package robot
 
 import (
 	"fmt"
+	"log/slog"
+	"os"
 	"strconv"
 
 	"github.com/goharbor/harbor-cli/pkg/api"
@@ -22,7 +24,6 @@ import (
 	"github.com/goharbor/harbor-cli/pkg/prompt"
 	"github.com/goharbor/harbor-cli/pkg/utils"
 	"github.com/goharbor/harbor-cli/pkg/views/robot/list"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -97,7 +98,8 @@ Examples:
 			} else {
 				projectID, err := prompt.GetProjectIDFromUser()
 				if err != nil {
-					log.Fatalf("failed to get project by id %d: %v", projectID, utils.ParseHarborErrorMsg(err))
+					slog.Error(fmt.Sprintf("failed to get project by id %d: %v", projectID, utils.ParseHarborErrorMsg(err)))
+					os.Exit(1)
 				}
 				opts.Q = projectQString + strconv.FormatInt(projectID, 10)
 			}
@@ -109,7 +111,7 @@ Examples:
 
 			formatFlag := viper.GetString("output-format")
 			if formatFlag != "" {
-				log.WithField("output_format", formatFlag).Debug("Output format selected")
+				slog.Debug("Output format selected", "output_format", formatFlag)
 				err = utils.PrintFormat(robots, formatFlag)
 				if err != nil {
 					return err

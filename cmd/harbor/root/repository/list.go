@@ -15,13 +15,13 @@ package repository
 
 import (
 	"fmt"
+	"log/slog"
 
 	"github.com/goharbor/go-client/pkg/sdk/v2.0/client/repository"
 	"github.com/goharbor/harbor-cli/pkg/api"
 	"github.com/goharbor/harbor-cli/pkg/prompt"
 	"github.com/goharbor/harbor-cli/pkg/utils"
 	"github.com/goharbor/harbor-cli/pkg/views/repository/list"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -72,7 +72,7 @@ func ListRepositoryCommand() *cobra.Command {
 			if FormatFlag != "" {
 				err = utils.PrintFormat(repos, FormatFlag)
 				if err != nil {
-					log.Error(err)
+					slog.Error(err.Error())
 				}
 			} else {
 				list.ListRepositories(repos.Payload)

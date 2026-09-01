@@ -17,13 +17,13 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"log/slog"
 	"math/rand"
 	"os"
 	"path/filepath"
 	"strings"
 
 	cmd "github.com/goharbor/harbor-cli/cmd/harbor/root"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"go.yaml.in/yaml/v4"
 )
@@ -50,11 +50,12 @@ func Doc() error {
 	folderName := "cli-docs"
 	_, err = os.Stat(folderName)
 	if os.IsNotExist(err) {
-		log.Printf("Folder %s does not exist", folderName)
+		slog.Info(fmt.Sprintf("Folder %s does not exist", folderName))
 		err = os.Mkdir(folderName, 0755)
 		if err != nil {
-			log.Printf("Failed to create directory %s : %v", folderName, err)
-			log.Fatal("Error creating folder:", err)
+			slog.Info(fmt.Sprintf("Failed to create directory %s : %v", folderName, err))
+			slog.Error(fmt.Sprint("Error creating folder:", err))
+			os.Exit(1)
 		}
 	}
 	docDir := fmt.Sprintf("%s/%s", currentDir, folderName)
@@ -222,7 +223,7 @@ func getWeight(filename string) int {
 	// Read the entire file
 	data, err := os.ReadFile(filename)
 	if err != nil {
-		log.Warningf("unable to read file: %v", filename)
+		slog.Warn(fmt.Sprintf("unable to read file: %v", filename))
 		return 0
 	}
 
@@ -231,7 +232,7 @@ func getWeight(filename string) int {
 
 	// Check and extract YAML front matter
 	if len(lines) < 3 || lines[0] != "---" {
-		log.Warningf("YAML front matter not found on file: %v", filename)
+		slog.Warn(fmt.Sprintf("YAML front matter not found on file: %v", filename))
 		return 0
 	}
 
@@ -249,7 +250,7 @@ func getWeight(filename string) int {
 	var fm FrontMatter
 	err = yaml.Unmarshal([]byte(yamlContent), &fm)
 	if err != nil {
-		log.Warningf("Failed to parse YAML in file %s", filename)
+		slog.Warn(fmt.Sprintf("Failed to parse YAML in file %s", filename))
 		return 0
 	}
 	return fm.Weight
@@ -258,6 +259,7 @@ func getWeight(filename string) int {
 func main() {
 	err := Doc()
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(err.Error())
+		os.Exit(1)
 	}
 }

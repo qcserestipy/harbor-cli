@@ -15,12 +15,13 @@ package create
 
 import (
 	"errors"
+	"log/slog"
+	"os"
 	"strconv"
 	"unicode"
 
 	"github.com/charmbracelet/huh"
 	"github.com/goharbor/go-client/pkg/sdk/v2.0/models"
-	log "github.com/sirupsen/logrus"
 )
 
 type CreateView struct {
@@ -88,7 +89,8 @@ func CreateRobotView(createView *CreateView) {
 		),
 	).WithTheme(theme).Run()
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(err.Error())
+		os.Exit(1)
 	}
 }
 
@@ -106,7 +108,8 @@ func CreateRobotSecretView(name string, secret string) {
 		),
 	).WithTheme(theme).Run()
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(err.Error())
+		os.Exit(1)
 	}
 }
 

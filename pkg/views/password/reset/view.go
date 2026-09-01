@@ -15,11 +15,12 @@ package reset
 
 import (
 	"errors"
+	"log/slog"
+	"os"
 	"strings"
 
 	"github.com/charmbracelet/huh"
 	"github.com/goharbor/harbor-cli/pkg/utils"
-	log "github.com/sirupsen/logrus"
 )
 
 type PasswordChangeView struct {
@@ -62,6 +63,7 @@ func ChangePasswordView(view *PasswordChangeView) {
 	).WithTheme(theme).Run()
 
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(err.Error())
+		os.Exit(1)
 	}
 }

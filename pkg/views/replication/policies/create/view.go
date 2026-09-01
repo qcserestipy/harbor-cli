@@ -16,12 +16,13 @@ package create
 import (
 	"errors"
 	"fmt"
+	"log/slog"
+	"os"
 	"strconv"
 	"strings"
 
 	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/lipgloss"
-	log "github.com/sirupsen/logrus"
 )
 
 type CreateView struct {
@@ -102,7 +103,8 @@ func CreateRPolicyView(createView *CreateView, update bool) {
 	basicForm := huh.NewForm(basicGroup).WithTheme(theme)
 	err := basicForm.Run()
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(err.Error())
+		os.Exit(1)
 	}
 
 	// Step 2: Create filter group based on selected mode
@@ -248,7 +250,8 @@ func CreateRPolicyView(createView *CreateView, update bool) {
 	restForm := huh.NewForm(filterGroup, triggerGroup, advancedGroup).WithTheme(theme)
 	err = restForm.Run()
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(err.Error())
+		os.Exit(1)
 	}
 
 	// Handle trigger-specific additional forms
@@ -264,7 +267,8 @@ func CreateRPolicyView(createView *CreateView, update bool) {
 		).WithTheme(theme)
 
 		if err := eventForm.Run(); err != nil {
-			log.Fatal(err)
+			slog.Error(err.Error())
+			os.Exit(1)
 		}
 	} else if createView.TriggerType == "scheduled" {
 		cronForm := huh.NewForm(
@@ -291,7 +295,8 @@ func CreateRPolicyView(createView *CreateView, update bool) {
 		).WithTheme(theme)
 
 		if err := cronForm.Run(); err != nil {
-			log.Fatal(err)
+			slog.Error(err.Error())
+			os.Exit(1)
 		}
 	}
 }

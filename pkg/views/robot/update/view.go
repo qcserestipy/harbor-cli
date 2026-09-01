@@ -15,12 +15,13 @@ package update
 
 import (
 	"errors"
+	"log/slog"
+	"os"
 	"strconv"
 
 	"github.com/charmbracelet/huh"
 	"github.com/go-openapi/strfmt"
 	"github.com/goharbor/go-client/pkg/sdk/v2.0/models"
-	log "github.com/sirupsen/logrus"
 )
 
 type UpdateView struct {
@@ -81,6 +82,7 @@ func UpdateRobotView(updateView *UpdateView) {
 		),
 	).WithTheme(theme).Run()
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(err.Error())
+		os.Exit(1)
 	}
 }
