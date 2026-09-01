@@ -79,7 +79,9 @@ func UserPasswordChangeCmd() *cobra.Command {
 				}
 			} else {
 				resetView := &reset.PasswordChangeView{}
-				reset.ChangePasswordView(resetView)
+				if err := reset.ChangePasswordView(resetView); err != nil {
+					return err
+				}
 				opts = *resetView
 			}
 

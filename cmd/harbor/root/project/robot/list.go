@@ -16,7 +16,6 @@ package robot
 import (
 	"fmt"
 	"log/slog"
-	"os"
 	"strconv"
 
 	"github.com/goharbor/harbor-cli/pkg/api"
@@ -98,8 +97,7 @@ Examples:
 			} else {
 				projectID, err := prompt.GetProjectIDFromUser()
 				if err != nil {
-					slog.Error(fmt.Sprintf("failed to get project by id %d: %v", projectID, utils.ParseHarborErrorMsg(err)))
-					os.Exit(1)
+					return fmt.Errorf("failed to get project by id %d: %v", projectID, utils.ParseHarborErrorMsg(err))
 				}
 				opts.Q = projectQString + strconv.FormatInt(projectID, 10)
 			}

@@ -16,7 +16,6 @@ package labels
 import (
 	"fmt"
 	"log/slog"
-	"os"
 
 	"github.com/goharbor/harbor-cli/pkg/api"
 	"github.com/goharbor/harbor-cli/pkg/utils"
@@ -81,8 +80,7 @@ func ListLabelCommand() *cobra.Command {
 
 			label, err := api.ListLabel(opts)
 			if err != nil {
-				slog.Error("failed to get label list", "error", err)
-				os.Exit(1)
+				return fmt.Errorf("failed to get label list: %v", err)
 			}
 
 			formatFlag := viper.GetString("output-format")

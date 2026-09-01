@@ -15,8 +15,6 @@ package create
 
 import (
 	"errors"
-	"log/slog"
-	"os"
 	"strconv"
 	"strings"
 
@@ -31,7 +29,7 @@ type RegistryOption struct {
 	Name string
 }
 
-func CreateRegistryView(createView *api.CreateRegView) {
+func CreateRegistryView(createView *api.CreateRegView) error {
 	registries, _ := api.GetRegistryProviders()
 
 	// Initialize a slice to hold registry options
@@ -114,7 +112,7 @@ func CreateRegistryView(createView *api.CreateRegView) {
 		),
 	).WithTheme(theme).Run()
 	if err != nil {
-		slog.Error(err.Error())
-		os.Exit(1)
+		return err
 	}
+	return nil
 }

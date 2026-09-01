@@ -36,8 +36,7 @@ func ManDoc() error {
 	if os.IsNotExist(err) {
 		err = os.Mkdir(folderName, 0755)
 		if err != nil {
-			slog.Error(fmt.Sprint("Error creating folder:", err))
-			os.Exit(1)
+			return fmt.Errorf("error creating folder: %v", err)
 		}
 	}
 	docDir := fmt.Sprintf("%s/%s", currentDir, folderName)
@@ -57,8 +56,7 @@ func ManDoc() error {
 
 	err = cleanManPages(docDir)
 	if err != nil {
-		slog.Error("Error cleaning up documentation", "error", err)
-		os.Exit(1)
+		return fmt.Errorf("error cleaning up documentation: %v", err)
 	}
 
 	fmt.Println("Documentation generated successfully in", docDir)

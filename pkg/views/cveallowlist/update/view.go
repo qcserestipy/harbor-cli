@@ -15,8 +15,6 @@ package update
 
 import (
 	"errors"
-	"log/slog"
-	"os"
 
 	"github.com/charmbracelet/huh"
 )
@@ -27,7 +25,7 @@ type UpdateView struct {
 	ExpireDate string
 }
 
-func UpdateCveView(updateView *UpdateView) {
+func UpdateCveView(updateView *UpdateView) error {
 	theme := huh.ThemeCharm()
 	err := huh.NewForm(
 		huh.NewGroup(
@@ -64,7 +62,8 @@ func UpdateCveView(updateView *UpdateView) {
 	).WithTheme(theme).Run()
 
 	if err != nil {
-		slog.Error(err.Error())
-		os.Exit(1)
+		return err
 	}
+
+	return nil
 }

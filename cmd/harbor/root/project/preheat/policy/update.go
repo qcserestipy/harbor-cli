@@ -98,7 +98,9 @@ func UpdatePolicyCommand() *cobra.Command {
 			}
 
 			opts := policyToCreateView(existingPolicy.Payload, providers)
-			create.CreatePreheatPolicyView(opts, providers)
+			if err := create.CreatePreheatPolicyView(opts, providers); err != nil {
+				return err
+			}
 
 			providerID, err := resolveProviderID(providers, opts.ProviderName, projectName)
 			if err != nil {

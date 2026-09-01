@@ -15,8 +15,6 @@ package update
 
 import (
 	"errors"
-	"log/slog"
-	"os"
 	"strings"
 
 	"github.com/charmbracelet/huh"
@@ -24,7 +22,7 @@ import (
 	"github.com/goharbor/harbor-cli/pkg/utils"
 )
 
-func UpdateRegistryView(updateView *models.Registry) {
+func UpdateRegistryView(updateView *models.Registry) error {
 	theme := huh.ThemeCharm()
 	err := huh.NewForm(
 		huh.NewGroup(
@@ -80,7 +78,7 @@ func UpdateRegistryView(updateView *models.Registry) {
 	).WithTheme(theme).Run()
 
 	if err != nil {
-		slog.Error(err.Error())
-		os.Exit(1)
+		return err
 	}
+	return nil
 }

@@ -15,8 +15,6 @@ package robot
 
 import (
 	"fmt"
-	"log/slog"
-	"os"
 	"strconv"
 
 	"github.com/atotto/clipboard"
@@ -88,8 +86,7 @@ Examples:
 				}
 				robotID, err = prompt.GetRobotIDFromUser(projectID)
 				if err != nil {
-					slog.Error(fmt.Sprintf("failed to get robot ID from user: %v", utils.ParseHarborErrorMsg(err)))
-					os.Exit(1)
+					return fmt.Errorf("failed to get robot ID from user: %v", utils.ParseHarborErrorMsg(err))
 				}
 			}
 
@@ -100,7 +97,10 @@ Examples:
 				}
 			}
 			if secretStdin {
-				secret = getSecret()
+				secret, err = getSecret()
+				if err != nil {
+					return err
+				}
 			}
 
 			response, err := api.RefreshSecret(secret, robotID)
@@ -112,7 +112,9 @@ Examples:
 
 			if response.Payload.Secret != "" {
 				secret = response.Payload.Secret
-				create.CreateRobotSecretView("", secret)
+				if err := create.CreateRobotSecretView("", secret); err != nil {
+					return err
+				}
 
 				err = clipboard.WriteAll(response.Payload.Secret)
 				if err != nil {
@@ -132,16 +134,14 @@ Examples:
 }
 
 // getSecret from commandline
-func getSecret() string {
+func getSecret() (string, error) {
 	secret, err := utils.GetSecretStdin("Enter your secret: ")
 	if err != nil {
-		slog.Error("Error reading secret", "error", err)
-		os.Exit(1)
+		return "", fmt.Errorf("Error reading secret: %v", err)
 	}
 
 	if err := utils.ValidatePassword(secret); err != nil {
-		slog.Error("Invalid secret", "error", err)
-		os.Exit(1)
+		return "", fmt.Errorf("Invalid secret: %v", err)
 	}
-	return secret
+	return secret, nil
 }

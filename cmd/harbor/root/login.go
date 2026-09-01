@@ -121,7 +121,9 @@ func CreateLoginView(loginView *login.LoginView) error {
 			Name:     "",
 		}
 	}
-	login.CreateView(loginView)
+	if err := login.CreateView(loginView); err != nil {
+		return err
+	}
 
 	return RunLogin(*loginView)
 }
@@ -185,8 +187,7 @@ func RunLogin(opts login.LoginView) error {
 			} else {
 				slog.Warn("Credentials already exist in the config file but the password is different. Updating the password.")
 				if err = utils.UpdateCredentialsInConfigFile(cred, configPath); err != nil {
-					slog.Error("failed to update the credential", "error", err)
-					os.Exit(1)
+					return fmt.Errorf("failed to update the credential: %v", err)
 				}
 				fmt.Printf("Login successful for %s at %s\n", opts.Username, opts.Server)
 				return nil
@@ -194,8 +195,7 @@ func RunLogin(opts login.LoginView) error {
 		} else {
 			slog.Warn("Credentials already exist in the config file but more than one field was different. Updating the credentials.")
 			if err = utils.UpdateCredentialsInConfigFile(cred, configPath); err != nil {
-				slog.Error("failed to update the credential", "error", err)
-				os.Exit(1)
+				return fmt.Errorf("failed to update the credential: %v", err)
 			}
 			fmt.Printf("Login successful for %s at %s\n", opts.Username, opts.Server)
 			return nil

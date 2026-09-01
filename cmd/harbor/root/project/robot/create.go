@@ -132,7 +132,9 @@ Examples:
 			if len(args) == 0 {
 				if (opts.Name == "" || opts.Duration == 0) && configFile == "" {
 					fmt.Println("Opening interactive form for robot creation")
-					create.CreateRobotView(&opts)
+					if err := create.CreateRobotView(&opts); err != nil {
+						return err
+					}
 				}
 
 				if opts.Duration == 0 {
@@ -216,7 +218,9 @@ Examples:
 				exportSecretToFile(name, secret, response.Payload.CreationTime.String(), response.Payload.ExpiresAt)
 				return nil
 			} else {
-				create.CreateRobotSecretView(name, secret)
+				if err := create.CreateRobotSecretView(name, secret); err != nil {
+					return err
+				}
 				err = clipboard.WriteAll(response.Payload.Secret)
 				if err != nil {
 					slog.Error("failed to write to clipboard")

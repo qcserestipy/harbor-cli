@@ -16,8 +16,6 @@ package create
 import (
 	"errors"
 	"fmt"
-	"log/slog"
-	"os"
 	"strings"
 
 	"github.com/charmbracelet/huh"
@@ -44,7 +42,7 @@ type CreateView struct {
 	CronString  string `json:"cron_string,omitempty"`
 }
 
-func CreatePreheatPolicyView(createView *CreateView, providers []*models.ProviderUnderProject) {
+func CreatePreheatPolicyView(createView *CreateView, providers []*models.ProviderUnderProject) error {
 	if createView.TriggerType == "" {
 		createView.TriggerType = "manual"
 	}
@@ -52,8 +50,7 @@ func CreatePreheatPolicyView(createView *CreateView, providers []*models.Provide
 	theme := huh.ThemeCharm()
 
 	if len(providers) == 0 {
-		slog.Error("No P2P provider instances available for this project. Please create a provider instance first.")
-		os.Exit(1)
+		return errors.New("No P2P provider instances available for this project. Please create a provider instance first.")
 	}
 
 	providerOptions := make([]huh.Option[string], 0, len(providers))
@@ -66,8 +63,7 @@ func CreatePreheatPolicyView(createView *CreateView, providers []*models.Provide
 	}
 
 	if len(providerOptions) == 0 {
-		slog.Error("No enabled P2P provider instances available for this project.")
-		os.Exit(1)
+		return errors.New("No enabled P2P provider instances available for this project.")
 	}
 
 	basicGroup := huh.NewGroup(
@@ -95,8 +91,7 @@ func CreatePreheatPolicyView(createView *CreateView, providers []*models.Provide
 
 	basicForm := huh.NewForm(basicGroup).WithTheme(theme)
 	if err := basicForm.Run(); err != nil {
-		slog.Error(err.Error())
-		os.Exit(1)
+		return err
 	}
 
 	filterGroup := huh.NewGroup(
@@ -139,8 +134,7 @@ func CreatePreheatPolicyView(createView *CreateView, providers []*models.Provide
 
 	restForm := huh.NewForm(filterGroup, triggerGroup).WithTheme(theme)
 	if err := restForm.Run(); err != nil {
-		slog.Error(err.Error())
-		os.Exit(1)
+		return err
 	}
 
 	if createView.TriggerType == "scheduled" {
@@ -162,8 +156,7 @@ func CreatePreheatPolicyView(createView *CreateView, providers []*models.Provide
 		).WithTheme(theme)
 
 		if err := presetForm.Run(); err != nil {
-			slog.Error(err.Error())
-			os.Exit(1)
+			return err
 		}
 
 		if schedulePreset == "custom" {
@@ -190,14 +183,14 @@ func CreatePreheatPolicyView(createView *CreateView, providers []*models.Provide
 			).WithTheme(theme)
 
 			if err := cronForm.Run(); err != nil {
-				slog.Error(err.Error())
-				os.Exit(1)
+				return err
 			}
 			createView.CronString = ResolveSchedulePreset(schedulePreset, createView.CronString)
 		} else {
 			createView.CronString = ResolveSchedulePreset(schedulePreset, "")
 		}
 	}
+	return nil
 }
 
 func schedulePresetForCron(cron string) string {

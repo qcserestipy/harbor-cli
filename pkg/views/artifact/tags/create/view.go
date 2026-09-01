@@ -15,15 +15,13 @@ package create
 
 import (
 	"errors"
-	"log/slog"
-	"os"
 	"strings"
 
 	"github.com/charmbracelet/huh"
 	"github.com/goharbor/harbor-cli/pkg/utils"
 )
 
-func CreateTagView(tagName *string) {
+func CreateTagView(tagName *string) error {
 	theme := huh.ThemeCharm()
 
 	err := huh.NewForm(
@@ -44,7 +42,8 @@ func CreateTagView(tagName *string) {
 	).WithTheme(theme).Run()
 
 	if err != nil {
-		slog.Error(err.Error())
-		os.Exit(1)
+		return err
 	}
+
+	return nil
 }

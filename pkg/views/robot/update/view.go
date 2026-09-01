@@ -15,8 +15,6 @@ package update
 
 import (
 	"errors"
-	"log/slog"
-	"os"
 	"strconv"
 
 	"github.com/charmbracelet/huh"
@@ -51,7 +49,7 @@ type Access struct {
 	Resource string `json:"resource,omitempty"`
 }
 
-func UpdateRobotView(updateView *UpdateView) {
+func UpdateRobotView(updateView *UpdateView) error {
 	duration := strconv.FormatInt(updateView.Duration, 10)
 
 	theme := huh.ThemeCharm()
@@ -82,7 +80,7 @@ func UpdateRobotView(updateView *UpdateView) {
 		),
 	).WithTheme(theme).Run()
 	if err != nil {
-		slog.Error(err.Error())
-		os.Exit(1)
+		return err
 	}
+	return nil
 }

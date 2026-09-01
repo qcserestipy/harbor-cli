@@ -209,25 +209,22 @@ func FromKebabCase(s string) string {
 }
 
 // GetUserIdFromUser retrieves the user ID from the current user context using viper and the Harbor client.
-func GetUserIdFromUser() int64 {
+func GetUserIdFromUser() (int64, error) {
 	credentialName := viper.GetString("current-credential-name")
 	client, err := GetClientByCredentialName(credentialName)
 	if err != nil {
-		slog.Error(err.Error())
-		os.Exit(1)
+		return 0, err
 	}
 	ctx := context.Background()
 	response, err := client.User.ListUsers(ctx, &user.ListUsersParams{})
 	if err != nil {
-		slog.Error(err.Error())
-		os.Exit(1)
+		return 0, err
 	}
 	userId, err := uview.UserList(response.Payload)
 	if err != nil {
-		slog.Error(err.Error())
-		os.Exit(1)
+		return 0, err
 	}
-	return userId
+	return userId, nil
 }
 
 // RemoveColumns removes columns with specified titles from the given columns array.

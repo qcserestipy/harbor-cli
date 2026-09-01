@@ -16,8 +16,6 @@ package update
 import (
 	"errors"
 	"fmt"
-	"log/slog"
-	"os"
 	"slices"
 	"strconv"
 	"strings"
@@ -32,7 +30,7 @@ type CreateView struct {
 	Value       int64
 }
 
-func UpdateQuotaView(quta *models.Quota) string {
+func UpdateQuotaView(quta *models.Quota) (string, error) {
 	var (
 		value      string
 		createView CreateView
@@ -92,9 +90,8 @@ func UpdateQuotaView(quta *models.Quota) string {
 		),
 	).WithTheme(theme).Run()
 	if err != nil {
-		slog.Error(err.Error())
-		os.Exit(1)
+		return "", err
 	}
 
-	return fmt.Sprintf("%v%v", createView.Value, createView.StorageUnit)
+	return fmt.Sprintf("%v%v", createView.Value, createView.StorageUnit), nil
 }

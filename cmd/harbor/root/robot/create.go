@@ -167,7 +167,9 @@ func loadFromConfigFile(opts *create.CreateView, configFile string, permissions 
 func handleInteractiveInput(opts *create.CreateView, all bool, permissions *[]models.Permission, projectPermissionsMap map[string][]models.Permission) error {
 	// Show interactive form if needed
 	if opts.Name == "" || opts.Duration == 0 {
-		create.CreateRobotView(opts)
+		if err := create.CreateRobotView(opts); err != nil {
+			return err
+		}
 	}
 
 	// Validate duration
@@ -375,7 +377,9 @@ func createRobotAndHandleResponse(opts *create.CreateView, exportToFile bool) er
 		return nil
 	}
 
-	create.CreateRobotSecretView(name, secret)
+	if err := create.CreateRobotSecretView(name, secret); err != nil {
+		return err
+	}
 	if err := clipboard.WriteAll(secret); err != nil {
 		slog.Error("failed to write to clipboard")
 	} else {

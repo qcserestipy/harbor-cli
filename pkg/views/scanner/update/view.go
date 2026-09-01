@@ -15,8 +15,6 @@ package update
 
 import (
 	"errors"
-	"log/slog"
-	"os"
 	"strings"
 
 	"github.com/charmbracelet/huh"
@@ -25,7 +23,7 @@ import (
 	"github.com/goharbor/harbor-cli/pkg/utils"
 )
 
-func UpdateScannerView(scanner *models.ScannerRegistration) {
+func UpdateScannerView(scanner *models.ScannerRegistration) error {
 	theme := huh.ThemeCharm()
 	err := huh.NewForm(
 		huh.NewGroup(
@@ -49,8 +47,7 @@ func UpdateScannerView(scanner *models.ScannerRegistration) {
 	).WithTheme(theme).Run()
 
 	if err != nil {
-		slog.Error(err.Error())
-		os.Exit(1)
+		return err
 	}
 
 	switch scanner.Auth {
@@ -80,8 +77,7 @@ func UpdateScannerView(scanner *models.ScannerRegistration) {
 			),
 		).WithTheme(theme).Run()
 		if err != nil {
-			slog.Error(err.Error())
-			os.Exit(1)
+			return err
 		}
 		scanner.AccessCredential = username + ":" + password
 	case "Bearer", "X-ScannerAdapter-API-Key":
@@ -94,8 +90,7 @@ func UpdateScannerView(scanner *models.ScannerRegistration) {
 			),
 		).WithTheme(theme).Run()
 		if err != nil {
-			slog.Error(err.Error())
-			os.Exit(1)
+			return err
 		}
 		if scanner.Auth == "Bearer" {
 			scanner.AccessCredential = "Bearer: " + scanner.AccessCredential
@@ -144,8 +139,8 @@ func UpdateScannerView(scanner *models.ScannerRegistration) {
 		),
 	).WithTheme(theme).Run()
 	if err != nil {
-		slog.Error(err.Error())
-		os.Exit(1)
+		return err
 	}
 	scanner.URL = strfmt.URI(utils.FormatUrl(url))
+	return nil
 }

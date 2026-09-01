@@ -53,9 +53,7 @@ func Doc() error {
 		slog.Info(fmt.Sprintf("Folder %s does not exist", folderName))
 		err = os.Mkdir(folderName, 0755)
 		if err != nil {
-			slog.Info(fmt.Sprintf("Failed to create directory %s : %v", folderName, err))
-			slog.Error(fmt.Sprint("Error creating folder:", err))
-			os.Exit(1)
+			return fmt.Errorf("error creating folder %s: %v", folderName, err)
 		}
 	}
 	docDir := fmt.Sprintf("%s/%s", currentDir, folderName)

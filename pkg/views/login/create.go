@@ -15,8 +15,6 @@ package login
 
 import (
 	"errors"
-	"log/slog"
-	"os"
 	"strings"
 
 	"github.com/charmbracelet/huh"
@@ -31,7 +29,7 @@ type LoginView struct {
 	Config   string
 }
 
-func CreateView(loginView *LoginView) {
+func CreateView(loginView *LoginView) error {
 	theme := huh.ThemeCharm()
 
 	err := huh.NewForm(
@@ -96,7 +94,8 @@ func CreateView(loginView *LoginView) {
 	).WithTheme(theme).
 		Run()
 	if err != nil {
-		slog.Error(err.Error())
-		os.Exit(1)
+		return err
 	}
+
+	return nil
 }

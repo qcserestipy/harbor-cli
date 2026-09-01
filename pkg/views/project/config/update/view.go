@@ -14,9 +14,6 @@
 package update
 
 import (
-	"log/slog"
-	"os"
-
 	"github.com/charmbracelet/huh"
 	"github.com/goharbor/go-client/pkg/sdk/v2.0/models"
 )
@@ -29,7 +26,7 @@ func validateValue(value *string) *string {
 	return value
 }
 
-func UpdateProjectMetadataView(config *models.ProjectMetadata) {
+func UpdateProjectMetadataView(config *models.ProjectMetadata) error {
 	theme := huh.ThemeCharm()
 	err := huh.NewForm(
 		huh.NewGroup(
@@ -76,7 +73,8 @@ func UpdateProjectMetadataView(config *models.ProjectMetadata) {
 	).WithTheme(theme).Run()
 
 	if err != nil {
-		slog.Error(err.Error())
-		os.Exit(1)
+		return err
 	}
+
+	return nil
 }

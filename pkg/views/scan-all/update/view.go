@@ -16,15 +16,13 @@ package update
 import (
 	"errors"
 	"fmt"
-	"log/slog"
-	"os"
 	"regexp"
 	"strings"
 
 	"github.com/charmbracelet/huh"
 )
 
-func UpdateSchedule(cron *string) {
+func UpdateSchedule(cron *string) error {
 	theme := huh.ThemeCharm()
 	err := huh.NewForm(
 		huh.NewGroup(
@@ -38,9 +36,9 @@ func UpdateSchedule(cron *string) {
 	).WithTheme(theme).Run()
 
 	if err != nil {
-		slog.Error(err.Error())
-		os.Exit(1)
+		return err
 	}
+	return nil
 }
 
 func validateCronExpression(cron string) error {

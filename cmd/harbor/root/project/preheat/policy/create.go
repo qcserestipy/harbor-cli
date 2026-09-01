@@ -105,7 +105,9 @@ func CreatePolicyCommand() *cobra.Command {
 			}
 
 			if configFile == "" {
-				create.CreatePreheatPolicyView(opts, providers)
+				if err := create.CreatePreheatPolicyView(opts, providers); err != nil {
+					return err
+				}
 			}
 
 			providerID, err := resolveProviderID(providers, opts.ProviderName, opts.ProjectName)

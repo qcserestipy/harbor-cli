@@ -15,8 +15,6 @@ package robot
 
 import (
 	"fmt"
-	"log/slog"
-	"os"
 	"strconv"
 
 	"github.com/atotto/clipboard"
@@ -84,8 +82,7 @@ Examples:
 			} else {
 				robotID, err = prompt.GetRobotIDFromUser(-1)
 				if err != nil {
-					slog.Error(fmt.Sprintf("failed to get robot ID from user: %v", utils.ParseHarborErrorMsg(err)))
-					os.Exit(1)
+					return fmt.Errorf("failed to get robot ID from user: %v", utils.ParseHarborErrorMsg(err))
 				}
 			}
 
@@ -96,26 +93,28 @@ Examples:
 				}
 			}
 			if secretStdin {
-				secret = getSecret()
+				secret, err = getSecret()
+				if err != nil {
+					return err
+				}
 			}
 
 			response, err := api.RefreshSecret(secret, robotID)
 			if err != nil {
 				errorCode := utils.ParseHarborErrorCode(err)
 				if errorCode == "403" {
-					slog.Error("Permission denied: (Project) Admin privileges are required to execute this command.\n")
-					os.Exit(1)
-				} else {
-					slog.Error(fmt.Sprintf("failed to refresh robot secret: %v\n", utils.ParseHarborErrorMsg(err)))
-					os.Exit(1)
+					return fmt.Errorf("Permission denied: (Project) Admin privileges are required to execute this command.\n")
 				}
+				return fmt.Errorf("failed to refresh robot secret: %v\n", utils.ParseHarborErrorMsg(err))
 			}
 
 			fmt.Println("Secret updated successfully.")
 
 			if response.Payload.Secret != "" {
 				secret = response.Payload.Secret
-				create.CreateRobotSecretView("", secret)
+				if err := create.CreateRobotSecretView("", secret); err != nil {
+					return err
+				}
 
 				err = clipboard.WriteAll(response.Payload.Secret)
 				if err != nil {
@@ -135,16 +134,14 @@ Examples:
 }
 
 // getSecret from commandline
-func getSecret() string {
+func getSecret() (string, error) {
 	secret, err := utils.GetSecretStdin("Enter your secret: ")
 	if err != nil {
-		slog.Error(fmt.Sprintf("Error reading secret: %v\n", err))
-		os.Exit(1)
+		return "", fmt.Errorf("Error reading secret: %v\n", err)
 	}
 
 	if err := utils.ValidatePassword(secret); err != nil {
-		slog.Error(fmt.Sprintf("Invalid secret: %v\n", err))
-		os.Exit(1)
+		return "", fmt.Errorf("Invalid secret: %v\n", err)
 	}
-	return secret
+	return secret, nil
 }

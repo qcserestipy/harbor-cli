@@ -238,7 +238,9 @@ func loadFromConfigFileForUpdate(opts *update.UpdateView, configFile string, per
 
 func handleInteractiveInputForUpdate(opts *update.UpdateView, all bool, permissions *[]models.Permission, projectPermissionsMap map[string][]models.Permission) error {
 	// Show interactive form for updating basic details
-	update.UpdateRobotView(opts)
+	if err := update.UpdateRobotView(opts); err != nil {
+		return err
+	}
 
 	// Validate duration
 	if opts.Duration == 0 {

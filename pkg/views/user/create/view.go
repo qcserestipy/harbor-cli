@@ -15,8 +15,6 @@ package create
 
 import (
 	"errors"
-	"log/slog"
-	"os"
 	"strings"
 
 	"github.com/charmbracelet/huh"
@@ -32,7 +30,7 @@ type CreateView struct {
 	ConfirmPassword string
 }
 
-func CreateUserView(createView *CreateView) {
+func CreateUserView(createView *CreateView) error {
 	theme := huh.ThemeCharm()
 	err := huh.NewForm(
 		huh.NewGroup(
@@ -106,7 +104,8 @@ func CreateUserView(createView *CreateView) {
 	).WithTheme(theme).Run()
 
 	if err != nil {
-		slog.Error(err.Error())
-		os.Exit(1)
+		return err
 	}
+
+	return nil
 }

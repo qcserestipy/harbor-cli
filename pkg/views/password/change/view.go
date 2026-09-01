@@ -15,8 +15,6 @@ package change
 
 import (
 	"errors"
-	"log/slog"
-	"os"
 	"strings"
 
 	"github.com/charmbracelet/huh"
@@ -29,7 +27,7 @@ type PasswordChangeView struct {
 	ConfirmPassword string
 }
 
-func ChangePasswordView(view *PasswordChangeView) {
+func ChangePasswordView(view *PasswordChangeView) error {
 	theme := huh.ThemeCharm()
 
 	err := huh.NewForm(
@@ -74,7 +72,8 @@ func ChangePasswordView(view *PasswordChangeView) {
 	).WithTheme(theme).Run()
 
 	if err != nil {
-		slog.Error(err.Error())
-		os.Exit(1)
+		return err
 	}
+
+	return nil
 }

@@ -15,8 +15,6 @@ package create
 
 import (
 	"errors"
-	"log/slog"
-	"os"
 	"strconv"
 	"unicode"
 
@@ -47,7 +45,7 @@ type Access struct {
 	Resource string `json:"resource,omitempty"`
 }
 
-func CreateRobotView(createView *CreateView) {
+func CreateRobotView(createView *CreateView) error {
 	duration := strconv.FormatInt(createView.Duration, 10)
 	if createView.Duration == 0 {
 		duration = "-1"
@@ -89,12 +87,12 @@ func CreateRobotView(createView *CreateView) {
 		),
 	).WithTheme(theme).Run()
 	if err != nil {
-		slog.Error(err.Error())
-		os.Exit(1)
+		return err
 	}
+	return nil
 }
 
-func CreateRobotSecretView(name string, secret string) {
+func CreateRobotSecretView(name string, secret string) error {
 	theme := huh.ThemeCharm()
 	err := huh.NewForm(
 		huh.NewGroup(
@@ -108,9 +106,9 @@ func CreateRobotSecretView(name string, secret string) {
 		),
 	).WithTheme(theme).Run()
 	if err != nil {
-		slog.Error(err.Error())
-		os.Exit(1)
+		return err
 	}
+	return nil
 }
 
 func isValidName(s string) bool {

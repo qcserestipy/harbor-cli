@@ -56,7 +56,9 @@ func CreateCommand() *cobra.Command {
 				}
 			} else {
 				opts = &create.CreateView{}
-				create.CreateRPolicyView(opts, false)
+				if err := create.CreateRPolicyView(opts, false); err != nil {
+					return err
+				}
 				registryID = prompt.GetRegistryNameFromUser()
 			}
 

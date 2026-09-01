@@ -141,7 +141,9 @@ func updatePredefinedSchedule(scheduleType string) error {
 func updateCustomSchedule(cron string) error {
 	if cron == "" {
 		slog.Debug("Opening interactive form for custom schedule configuration")
-		update.UpdateSchedule(&cron)
+		if err := update.UpdateSchedule(&cron); err != nil {
+			return err
+		}
 	}
 
 	if err := validateCron(cron); err != nil {

@@ -15,8 +15,6 @@ package create
 
 import (
 	"errors"
-	"log/slog"
-	"os"
 
 	"github.com/charmbracelet/huh"
 )
@@ -31,7 +29,7 @@ type ImmutableSelector struct {
 	Pattern    string `json:"pattern,omitempty"`
 }
 
-func CreateImmutableView(createView *CreateView) {
+func CreateImmutableView(createView *CreateView) error {
 	theme := huh.ThemeCharm()
 	err := huh.NewForm(
 		huh.NewGroup(
@@ -83,7 +81,8 @@ func CreateImmutableView(createView *CreateView) {
 	).WithTheme(theme).Run()
 
 	if err != nil {
-		slog.Error(err.Error())
-		os.Exit(1)
+		return err
 	}
+
+	return nil
 }

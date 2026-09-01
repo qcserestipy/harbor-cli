@@ -16,8 +16,6 @@ package create
 import (
 	"errors"
 	"fmt"
-	"log/slog"
-	"os"
 	"strconv"
 	"strings"
 
@@ -49,7 +47,7 @@ type CreateView struct {
 	LabelPattern   string `json:"label_pattern,omitempty"` // label key=value pairs
 }
 
-func CreateRPolicyView(createView *CreateView, update bool) {
+func CreateRPolicyView(createView *CreateView, update bool) error {
 	if createView.TriggerType == "" {
 		createView.TriggerType = "manual"
 	}
@@ -103,8 +101,7 @@ func CreateRPolicyView(createView *CreateView, update bool) {
 	basicForm := huh.NewForm(basicGroup).WithTheme(theme)
 	err := basicForm.Run()
 	if err != nil {
-		slog.Error(err.Error())
-		os.Exit(1)
+		return err
 	}
 
 	// Step 2: Create filter group based on selected mode
@@ -250,8 +247,7 @@ func CreateRPolicyView(createView *CreateView, update bool) {
 	restForm := huh.NewForm(filterGroup, triggerGroup, advancedGroup).WithTheme(theme)
 	err = restForm.Run()
 	if err != nil {
-		slog.Error(err.Error())
-		os.Exit(1)
+		return err
 	}
 
 	// Handle trigger-specific additional forms
@@ -267,8 +263,7 @@ func CreateRPolicyView(createView *CreateView, update bool) {
 		).WithTheme(theme)
 
 		if err := eventForm.Run(); err != nil {
-			slog.Error(err.Error())
-			os.Exit(1)
+			return err
 		}
 	} else if createView.TriggerType == "scheduled" {
 		cronForm := huh.NewForm(
@@ -295,8 +290,8 @@ func CreateRPolicyView(createView *CreateView, update bool) {
 		).WithTheme(theme)
 
 		if err := cronForm.Run(); err != nil {
-			slog.Error(err.Error())
-			os.Exit(1)
+			return err
 		}
 	}
+	return nil
 }

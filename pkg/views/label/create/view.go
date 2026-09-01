@@ -15,8 +15,6 @@ package create
 
 import (
 	"errors"
-	"log/slog"
-	"os"
 
 	"github.com/charmbracelet/huh"
 )
@@ -29,7 +27,7 @@ type CreateView struct {
 	ProjectID   int64
 }
 
-func CreateLabelView(createView *CreateView) {
+func CreateLabelView(createView *CreateView) error {
 	theme := huh.ThemeCharm()
 	err := huh.NewForm(
 		huh.NewGroup(
@@ -104,7 +102,8 @@ func CreateLabelView(createView *CreateView) {
 	).WithTheme(theme).Run()
 
 	if err != nil {
-		slog.Error(err.Error())
-		os.Exit(1)
+		return err
 	}
+
+	return nil
 }

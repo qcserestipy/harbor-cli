@@ -17,7 +17,6 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"os"
 	"strconv"
 
 	"github.com/goharbor/harbor-cli/pkg/utils"
@@ -144,19 +143,18 @@ func GetRoleNameFromUser() int64 {
 	return <-roleChan
 }
 
-func GetRepoNameFromUser(projectName string) string {
-	repositoryName := make(chan string)
+func GetRepoNameFromUser(projectName string) (string, error) {
+	response, err := api.ListRepository(projectName, false)
+	if err != nil {
+		return "", err
+	}
 
+	repositoryName := make(chan string)
 	go func() {
-		response, err := api.ListRepository(projectName, false)
-		if err != nil {
-			slog.Error(err.Error())
-			os.Exit(1)
-		}
 		repoView.RepositoryList(response.Payload, repositoryName)
 	}()
 
-	return <-repositoryName
+	return <-repositoryName, nil
 }
 
 // complete the function
@@ -386,57 +384,52 @@ func GetRobotIDFromUser(projectID int64) (int64, error) {
 	return id, nil
 }
 
-func GetReplicationPolicyFromUser() int64 {
-	replicationPolicyID := make(chan int64)
+func GetReplicationPolicyFromUser() (int64, error) {
+	response, err := api.ListReplicationPolicies()
+	if err != nil {
+		return 0, err
+	}
 
+	replicationPolicyID := make(chan int64)
 	go func() {
-		response, err := api.ListReplicationPolicies()
-		if err != nil {
-			slog.Error(err.Error())
-			os.Exit(1)
-		}
 		rpolicies.ReplicationPoliciesList(response.Payload, replicationPolicyID)
 	}()
 
-	return <-replicationPolicyID
+	return <-replicationPolicyID, nil
 }
 
-func GetReplicationExecutionIDFromUser(rpolicyID int64) int64 {
-	executionID := make(chan int64)
+func GetReplicationExecutionIDFromUser(rpolicyID int64) (int64, error) {
+	response, err := api.ListReplicationExecutions(rpolicyID)
+	if err != nil {
+		return 0, err
+	}
+	if len(response.Payload) == 0 {
+		return 0, errors.New("no replication executions found")
+	}
 
+	executionID := make(chan int64)
 	go func() {
-		response, err := api.ListReplicationExecutions(rpolicyID)
-		if err != nil {
-			slog.Error(err.Error())
-			os.Exit(1)
-		}
-		if len(response.Payload) == 0 {
-			slog.Error("no replication executions found")
-			os.Exit(1)
-		}
 		rexecutions.ReplicationExecutionList(response.Payload, executionID)
 	}()
 
-	return <-executionID
+	return <-executionID, nil
 }
 
-func GetReplicationTaskIDFromUser(execID int64) int64 {
-	executionID := make(chan int64)
+func GetReplicationTaskIDFromUser(execID int64) (int64, error) {
+	response, err := api.ListReplicationTasks(execID)
+	if err != nil {
+		return 0, err
+	}
+	if len(response.Payload) == 0 {
+		return 0, errors.New("no replication tasks found")
+	}
 
+	executionID := make(chan int64)
 	go func() {
-		response, err := api.ListReplicationTasks(execID)
-		if err != nil {
-			slog.Error(err.Error())
-			os.Exit(1)
-		}
-		if len(response.Payload) == 0 {
-			slog.Error("no replication tasks found")
-			os.Exit(1)
-		}
 		rtasks.ReplicationTasksList(response.Payload, executionID)
 	}()
 
-	return <-executionID
+	return <-executionID, nil
 }
 
 // Get GetMemberIDFromUser choosing from list of members

@@ -63,7 +63,10 @@ func UpdateQuotaCommand() *cobra.Command {
 					}
 				}
 			} else {
-				storage = update.UpdateQuotaView(quota)
+				storage, err = update.UpdateQuotaView(quota)
+				if err != nil {
+					return err
+				}
 				storageValue, err = utils.StorageStringToBytes(storage)
 				if err != nil {
 					return fmt.Errorf("failed to parse storage: %v", err)

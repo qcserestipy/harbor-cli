@@ -76,7 +76,9 @@ harbor help
 			// Determine if --config was explicitly set
 			userSpecifiedConfig := cmd.Flags().Changed("config")
 			// Initialize configuration
-			utils.InitConfig(cfgFile, userSpecifiedConfig)
+			if err := utils.InitConfig(cfgFile, userSpecifiedConfig); err != nil {
+				return err
+			}
 
 			// Logging Flags
 			arr := make([]any, 0) // slog requires any since the slog.Debug takes in (string, ...any)

@@ -14,9 +14,6 @@
 package views
 
 import (
-	"log/slog"
-	"os"
-
 	"github.com/charmbracelet/huh"
 )
 
@@ -29,8 +26,7 @@ func ConfirmElevation() (bool, error) {
 		Negative("No").
 		Value(&confirm).Run()
 	if err != nil {
-		slog.Error(err.Error())
-		os.Exit(1)
+		return false, err
 	}
 
 	return confirm, nil
